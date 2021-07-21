@@ -50,7 +50,7 @@ use fastqc to check what the data quality looks like for CH1401_R2.fasq after tr
 
 We can see that cutadapt did a good job of cleaning up the data
 
-![fastq_postclean_example](./outputs/CHR1401_R2_after.png)
+![fastq_postclean_example](./outputs/CH1401_R2_after.png)
 
 ## Working with mapped data
 
