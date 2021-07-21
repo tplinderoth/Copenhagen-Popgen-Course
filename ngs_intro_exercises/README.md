@@ -17,7 +17,7 @@ Will automatically detect file format type, but can specify with `-f`.
 
 normally you can scp the html files onto your local machine and view them in the web. It would look something like:
 
-![fastq_preclean_example](./main/ngs_intro_exercises/outputs/CH1401_R2_before.png)
+![fastq_preclean_example](CH1401_R2_before.png)
 
 ## software
 fastqc: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
