@@ -16,7 +16,8 @@ Will automatically detect file format type, but can specify with `-f`.
 	fastqc -outdir "$DIR/output/" $DIR/data/fastq/*.fastq
 
 normally you can scp the html files onto your local machine and view them in the web. It would look something like:
+
 ![fastq_preclean_example](./ngs_intro_exercises/outputs/CH1401_R2_before.png)
 
-## sofware
+## software
 fastqc: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
