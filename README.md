@@ -1,0 +1,2 @@
+Copenhagen Popgen Summer Course
+===============================
