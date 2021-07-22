@@ -6,6 +6,8 @@ Set some environmental variables (assume bams are in ${DIR}/data/bams and fastq 
 	DIR=/home/tyler/Desktop/workshop_tmp
 	mkdir "$DIR/output"
 	IGV=/home/tyler/install/IGV_Linux_2.9.4/igv.sh
+	BAMLIST="$DIR/data/cichlid_bams.list"
+	CICHREF="$DIR/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa"
 
 ## fastq
 
@@ -58,8 +60,7 @@ Specifing Illumina TruSeq [adapters](https://support.illumina.com/bulletins/2016
 
 use fastqc to check what the data quality looks like for CH1401_R2.fasq after trimming
 
-	fastqc -outdir "$DIR/output/" "$DIR/output/CH1401_R2_clean_pe.fastq.gz"
-	#fastqc -outdir "$DIR/output/" "$DIR/output/CH1401_R2_clean.fastq.gz"
+	fastqc -outdir "$DIR/output/" "$DIR/output/CH1401_R2_clean.fastq.gz"
 
 We can see that cutadapt did a good job of cleaning up the data
 
@@ -117,8 +118,42 @@ The first 5 lines, `samtools view "$DIR/data/bams/CMASS6169443.bam | head -n 5` 
 
 ## samtools mpileup
 
-Can you make a pileup that also includes quality scores?
+Lets looks at the mapped data on chr7:10,000-10,015
+
+	samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10010 | less -S
+
+Here's what the data looks like for the first 6 individuals in the bam file, `samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10015 | cut -f1-21 | column -t`
+
+	chr7  10000  T  2  .,      EB    7  .,,,,,^],   >IIBGGE   6  .....,       DEGEGG     9   ,.,,.,,.,     DABGIIIII   5  ,,.,.  >AB/A  6  .,,...  FGGBGB
+	chr7  10001  C  3  .,^].   EBB   7  .,,,,,,     >IIBGGI   6  .....,       DEGEGG     9   ,.,,.,,.,     DABGIIIII   5  ,,.,.  >ABDA  6  .,,...  3GGBGB
+	chr7  10002  G  3  .,.     EBB   7  .,,,,,,     >IIBGGI   6  .....,       DEGEGG     9   ,.,,.,,.,     DABGIIIII   5  ,,.,.  >ABDA  6  .,,...  3GGBGB
+	chr7  10003  G  3  .,.     EBB   7  .,,,,,,     >IIBGGI   6  .....,       DEGEGG     10  ,.,,.,,.,^].  DABGIIIIIE  5  ,,.,.  >AB/A  6  .,,...  3GGBGB
+	chr7  10004  A  3  .,.     EBB   8  .,,,,,,^].  >IIBGGIE  6  .....,       DEGEGG     10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >AB/A  6  .,,...  3GGBGB
+	chr7  10005  G  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  6  .....,       DEGEGG     10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >ABDA  6  .,,...  BGGBGB
+	chr7  10006  A  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  6  .....,       DEGEGG     10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >ABDA  6  C,,...  5G/BGB
+	chr7  10007  G  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  7  .....,^].    DEGEGGE    10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >ABDA  6  .,,...  5GIBGB
+	chr7  10008  C  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  7  .....,.      DEGEGGG    10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >ABDA  6  .,,...  5GIBGB
+	chr7  10009  A  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  8  .....,.^],   DEGEGGGB   10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >ABDA  6  .,,...  5GIBGB
+	chr7  10010  G  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  8  .....,.,     DEGEGGGB   10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >AB/A  6  .,,...  DGIBGB
+	chr7  10011  C  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  8  .....,.,     DEGEGGGB   10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >ABAA  6  .,,...  DGIBGB
+	chr7  10012  T  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  8  .....,.,     DEGEGGGB   10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >/BAA  6  .,,...  DGIBGB
+	chr7  10013  T  3  .,.     EBB   8  .,,,,,,.    >IIBGGIG  9  .....,.,^],  DEGEGGGBE  10  ,.,,.,,.,.    DABGIIIIII  5  ,,.,.  >BBAA  6  .,,...  DGIBGB
+	chr7  10014  A  4  .,.^].  EBBE  8  .,,,,,,.    >IIBGGIG  9  .G...gG,,    DEGEGGGBG  10  ,.,,.,,.,.    D3BGIIIIII  5  ,,.,C  >BBAA  6  .,,...  DGIBGB
+	chr7  10015  G  4  .,..    EBBI  8  .,,,,,,.    >IIBGGIG  9  .....,.,,    DEGEGGGBG  10  ,.,,.,,.,.    D3BGIIIIII  5  ,,.,.  >BBAA  6  .,,...  /GIBGB
+
 Looking at this data do you think you could confidently call genotypes?
+
+Now figure out how to generate the same pileup but one that includes mapping quality and that only consider reads with a minimum quality/BAQ of 20
+
+<details>
+
+<summary>Click here for code<\summary>
+
+``` bash
+samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10010 -Q 20 --output-MQ | less -S
+```
+
+<\details>
 
 ## IGV
 
@@ -146,6 +181,8 @@ A useful way to visualize mapping information is with the Integrative Genomics V
 <br> <br>
 
 ## coverage plot
+
+
 
 ## bcftools filtering
 
