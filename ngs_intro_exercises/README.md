@@ -120,7 +120,7 @@ The first 5 lines, `samtools view "$DIR/data/bams/CMASS6169443.bam | head -n 5` 
 
 Lets looks at the mapped data on chr7:10,000-10,015
 
-	samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10010 | less -S
+	samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10015 | less -S
 
 Here's what the data looks like for the first 6 individuals in the bam file, `samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10015 | cut -f1-21 | column -t`
 
@@ -143,17 +143,21 @@ Here's what the data looks like for the first 6 individuals in the bam file, `sa
 
 Looking at this data do you think you could confidently call genotypes?
 
-Now figure out how to generate the same pileup but one that includes mapping quality and that only consider reads with a minimum quality/BAQ of 20
+Now figure out how to generate the same pileup but one that includes mapping quality and that only consider reads with a minimum quality/BAQ of 20.
+Write the output to a file called 'mapq_example.pileup' in the 'output' ${DIR}/output/
 
 <details>
 
-<summary>Click here for code<\summary>
+<summary>Click here for code</summary>
 
 ``` bash
-samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10010 -Q 20 --output-MQ | less -S
+samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10015 -Q 20 --output-MQ > $DIR/output/mapq_example.pileup
+
+# examine the file in an easy-to-read way
+cat $DIR/output/mapq_example.pileup | column -t | less -S
 ```
 
-<\details>
+</details>
 
 ## IGV
 
