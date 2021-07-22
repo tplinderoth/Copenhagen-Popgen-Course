@@ -5,7 +5,7 @@ Set some environmental variables (assume bams are in ${DIR}/data/bams and fastq 
 
 	DIR=/home/tyler/Desktop/workshop_tmp
 	mkdir "$DIR/output"
-	TRIMJAR=/home/tyler/install/Trimmomatic-0.39/trimmomatic-0.39.jar
+	IGV=/home/tyler/install/IGV_Linux_2.9.4/igv.sh
 
 ## fastq
 
@@ -79,6 +79,9 @@ Use [bwa](https://github.com/lh3/bwa) to map the reads to the imitator exome ass
 	| samtools sort -O BAM > "$DIR/output/CH1401.bam"
 	# consider option -I from bioanalyzer for bwa
 
+	# index bam
+	samtools index "$DIR/output/CH1401.bam"
+
 ## Working with mapped data
 
 After you've mapped your cleaned-up fastq reads, you can have a look at the mapping information in SAM/BAM/CRAM files with samtools.
@@ -120,6 +123,27 @@ Looking at this data do you think you could confidently call genotypes?
 ## IGV
 
 A useful way to visualize mapping information is with the Integrative Genomics Viewer (IGV)
+
+	# start up igv
+	# $IGV
+	# load reference genome
+	# In top menu: 'Genomes' -> 'Load Genome from File...' and select XXX/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa (give it a little time to load the genome)
+	# load BAM
+	# In top menu: 'File' -> 'Load from File...' select XXX/CMASS6607982.bam
+	# GO STRAIGH TO HERE: Load session
+	# In the box next to 'Go' type 'chr7:18,078,500-18,102,000' and press 'Go'
+	# Right-click on the track containing the reads in the IGV window and select 'view as pairs' and 'Group alignment by' -> 'pair orientation'
+	# click the button with the circle with four arrows pointing at it 'Resize tracks to fit in window.'
+
+<details>
+
+<summary> Click here to see what you should be seeing </summary>
+
+![bam_igv_region](./outputs/cichlid_igv_region.png)
+
+</details>
+
+<br> <br>
 
 ## coverage plot
 
