@@ -8,6 +8,8 @@ Set some environmental variables (assume bams are in ${DIR}/data/bams and fastq 
 	IGV=/home/tyler/install/IGV_Linux_2.9.4/igv.sh
 	BAMLIST="$DIR/data/cichlid_bams.list"
 	CICHREF="$DIR/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa"
+	BAMDIR=/home/tyler/Desktop/workshop_tmp/data/bams
+	SCRIPTS=/home/tyler/teaching/Copenhagen_popgen_21/ngs_intro_exercises/scripts
 
 ## fastq
 
@@ -168,11 +170,12 @@ A useful way to visualize mapping information is with the Integrative Genomics V
 	# load reference genome
 	# In top menu: 'Genomes' -> 'Load Genome from File...' and select XXX/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa (give it a little time to load the genome)
 	# load BAM
-	# In top menu: 'File' -> 'Load from File...' select XXX/CMASS6607982.bam
+	# In top menu: 'File' -> 'Load from File...' select XXX/CMASS6607991.bam
 	# GO STRAIGH TO HERE: Load session
 	# In the box next to 'Go' type 'chr7:18,078,500-18,102,000' and press 'Go'
 	# Right-click on the track containing the reads in the IGV window and select 'view as pairs' and 'Group alignment by' -> 'pair orientation'
 	# click the button with the circle with four arrows pointing at it 'Resize tracks to fit in window.'
+	# click on one of the green reads and figure out where its mate maps
 
 <details>
 
@@ -186,7 +189,100 @@ A useful way to visualize mapping information is with the Integrative Genomics V
 
 ## coverage plot
 
+You can also see that some samples do not have unproperly mapped reads, e.g. CMASS6169461.
 
+![igv_region_comparison](./outputs/cichlid_comparison_igv_region.png)
+
+Let's check the coverage spanning the region where reads were mapping in the RL orientation +/- ~20 kb. Do this for a subset of samples
+showing different mapping patterns (4 strange, 2 normal controls).
+
+``` bash
+BAM1=$BAMDIR/CMASS6608026.bam # improper mapping
+BAM2=$BAMDIR/CMASS6607991.bam # improper mapping
+BAM3=$BAMDIR/CMASS6389722.bam # improper mapping
+BAM4=$BAMDIR/CMASS6169445.bam # improper mapping
+BAM5=$BAMDIR/CMASS6169461.bam # proper mapping
+BAM6=$BAMDIR/CMASS6169443.bam # proper mapping
+
+(( echo "CHR POS $BAM1 $BAM2 $BAM3 $BAM4 $BAM5 $BAM6" | sed "s;\($BAMDIR\/\|.bam\);;g" | tr ' ' '\t' ); \
+(samtools depth -a -r chr7:18059155-18120834 $BAM1 $BAM2 $BAM3 $BAM4 $BAM5 $BAM6)) > $DIR/output/cichlid_region_depth.txt
+
+# calculate relative depth and plot a depth profile
+# calmas_meta_sub.txt file contains cichlid metadata, including average genome-wide sequence depth
+
+$SCRIPTS/plot_depth_region.R $DIR/output/cichlid_region_depth.txt $DIR/data/calmas_meta_sub.txt $DIR/output/region_depth_profile
+```
+<details>
+
+<summary> Click here to see plot_depth_region.R code </summary>
+
+```bash
+#!/usr/bin/env Rscript
+
+# plot_depth_region.R <depth file> <metadata file> <output prefix>
+
+## parse input from the command line
+
+args <- commandArgs(trailingOnly=TRUE)
+
+depth <- read.table(args[1], head=TRUE)
+meta <- read.table(args[2], head=TRUE)
+outprefix <- args[3]
+
+## normalize the depth of every sample by their genome-wide depth
+for (i in 3:ncol(depth)) { depth[,i] = depth[,i]/meta$sequence.depth[which(meta$sample.ID == colnames(depth)[i])]}
+
+# print relative depth of samples for the region spanning improperly mapped reads
+start = 18079155 # start of region where reads map in RL orientation
+end = 18100834 # end of region where reads map in RL orientation
+cat("\nRelative sequencing depth\n\n")
+for (i in 3:ncol(depth)) { cat(paste0(colnames(depth)[i],": ", round(mean(depth[,i][which(depth$POS > start & depth$POS < end)]),digits=3),"\n")) }
+
+## take mean in 100 bp windows for smoothing (makes viewing the plots easier) ##
+inc=100
+win=matrix(nrow=ceiling(nrow(depth)/inc), ncol=ncol(depth))
+a=1
+b=inc
+for (i in 1:nrow(win)) {
+        win[i,1] = depth$POS[a]
+        win[i,2] = depth$POS[b]
+        for (j in 3:ncol(depth)) { win[i,j] = mean(depth[a:b,j])}
+        a=b+1
+        b=a+inc-1
+        if (b > nrow(depth)) b = nrow(depth)
+}
+
+# plot relative coverage profile for 2 of the individuals
+
+n=nrow(win)
+mid = round((win[,1]+win[,2])/2)
+pdf(file=paste0(outprefix,".pdf"),width=8,height=5)
+plot(x=1:n, y=win[,3],type="l", ylim=c(0,4), col="royalblue4", xlab="Window midpoint", ylab="Relative sequence depth", cex.axis=1.2, cex.lab=1.2, lwd=1.5, xaxt='n')
+axis(1, at=c(0,100,200,300,400,500,600),labels=mid[c(1,100,200,300,400,500,600)],cex.axis=1.2)
+lines(x=1:n, y=win[,7], col="violet", lwd=1.5)
+legend("topleft", c("CMASS6608026","CMASS6169461"),col=c("royalblue4","violet"), lwd=3, bty='n')
+invisible(dev.off())
+```
+
+</details>
+
+Lets look at the depth plot
+
+```bash
+evince "$DIR/output/region_depth_profile.pdf"
+```
+What can you infer about the genomes of these six cichlids samples from the mapping information
+that you've seen in IGV and depth profiling?
+
+<details>
+
+<summary> Click here for answer </summary>
+Tandem duplication of gsdf gene, which generates males.
+~1x relative depth = non-duplicated
+~1.5x = heterozygous for duplication
+~2x = homozygous for duplication
+
+</details>
 
 ## bcftools filtering
 
