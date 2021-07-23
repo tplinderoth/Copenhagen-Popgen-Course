@@ -277,12 +277,14 @@ that you've seen in IGV and depth profiling?
 <details>
 
 <summary> Click here for answer </summary>
-Tandem duplication of gsdf gene, which generates males.
-~1x relative depth = non-duplicated
-~1.5x = heterozygous for duplication
+Tandem duplication of gsdf gene, which generates males. <br>
+~1x relative depth = non-duplicated <br>
+~1.5x = heterozygous for duplication <br>
 ~2x = homozygous for duplication
 
 </details>
+
+<br>
 
 ## bcftools filtering
 
