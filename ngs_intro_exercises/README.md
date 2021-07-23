@@ -204,7 +204,7 @@ BAM4=$BAMDIR/CMASS6169445.bam # improper mapping
 BAM5=$BAMDIR/CMASS6169461.bam # proper mapping
 BAM6=$BAMDIR/CMASS6169443.bam # proper mapping
 
-(( echo "CHR POS $BAM1 $BAM2 $BAM3 $BAM4 $BAM5 $BAM6" | sed "s;\($BAMDIR\/\|.bam\);;g" | tr ' ' '\t' ); \
+(( echo -e "CHR\tPOS\t$BAM1\t$BAM2\t$BAM3\t$BAM4\t$BAM5\t$BAM6" | sed "s;\($BAMDIR\/\|.bam\);;g" ); \
 (samtools depth -a -r chr7:18059155-18120834 $BAM1 $BAM2 $BAM3 $BAM4 $BAM5 $BAM6)) > $DIR/output/cichlid_region_depth.txt
 
 # calculate relative depth and plot a depth profile
@@ -288,9 +288,34 @@ Tandem duplication of gsdf gene, which generates males. <br>
 
 ## bcftools filtering
 
-## software
-fastqc: https://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+First let's generate a distribution of the total site depth
 
-<br>
+Generate a VCF with some info that we can filter on
 
-cutadapt: https://cutadapt.readthedocs.io/en/stable/index.html
+```bash
+bcftools mpileup -f $DIR/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa -b $DIR/data/cichlid_bams.list \
+-d 40000 -L 40000 -r chr7:1-50000 -q 13 -Q 13 --ff UNMAP,SECONDARY,QCFAIL,DUP -a FORMAT/AD,FORMAT/DP,QS,FORMAT/SCR,INFO/AD,INFO/SCR -p O u \
+| bcftools call --ploidy 2 -a PV4,GQ,GP -m -P 0.001 -O u | bcftools +fill-tags -O b -o $DIR/output/calmas_allsites.bcf.gz -- -t'AF,NS,ExcHet'
+```
+The vcf is in compressed binary fomat to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
+can use to filter on.
+
+	bcftools view $DIR/output/calmas_allsites.bcf.gz | less -S
+
+Lets see how we could extract some information for quantities we might want to examine the distribution of prior to filtering.
+
+``` bash
+((echo -e "CHROM\tPOS\tDP\tMQ\tSTRAND_BIAS\tBASEQ_BIAS\tMQ_BIAS\tPOS_BIAS\tEXCHET"); \
+(bcftools query -f "%CHROM\t%POS\t%INFO/DP\t%INFO/MQ\t%INFO/PV4{0}\t%INFO/PV4{1}\t%INFO/PV4{2}\t%INFO/PV4{3}\t%ExcHet\n" $DIR/output/calmas_allsites.bcf.gz)) > $DIR/output/allsites_stats.txt
+```
+
+Filter the VCF. We'll avoid dumping another VCF with just sites that pass our quality controls by extracting just the sites.
+We can use these sites with ANGSD tomorrow.
+
+| bcftools view -T ^/space/s2/diana/Rimitator/sites_290421/exclude_sites.bed -i 'N_PASS(FMT/DP[0-32] > 2) > 14 && N_PASS(FMT/DP[33-65] > 2) > 14 && N_PASS(FMT/DP[66-123] > 2) > 14' 
+| bcftools view -e 'INFO/BandMisMap > 500 || INFO/StripeMisMap > 500 || INFO/AdmixMisMap > 500 || INDEL=1 || INFO/MQ < 30 || INFO/DP > 20000 || INFO/PV4[0] < 1e-100 || INFO/PV4[1] < 1e-100 || INFO/PV4[2] < 1e-100 || INFO/PV4[3] < 1e-100 || INFO/ExcHet < 1e-3' -M 2 | bcftools query -f "%CHROM\t%POS\n" > /space/s2/diana/Rimitator/sites_290421/imi_model_allsites_set1.pos
+
+bcftools view -i 'N_PASS(FMT/DP[0-14] > 2) > 5 && N_PASS(FMT/DP[15-39] > 2) > 5' $DIR/output/calmas_allsites.bcf.gz | bcftools view -e 'INDEL=1 || INFO/MQ < 30 || INFO/DP > 4000 || INFO/PV4[0] < 1e-100 || INFO/PV4[1] < 1e-100 || INFO/PV4[2] < 1e-100 || INFO/PV4[2] < 1e-100 || INFO/PV4[3] < 1e-100 || INFO/ExcHet < 1e-3' -M 2 | bcftools query -f "%CHROM\t%POS\n" > $DIR/output/qc_sites.pos
+
+
+You could bypass dumping the initial VCF entire using one large strong pipes. Give it a try.
