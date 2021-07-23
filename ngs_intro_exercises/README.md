@@ -1,29 +1,33 @@
 INTRODUCTION TO NGS DATA EXERCISES
 ==================================
 
-Set some environmental variables (assume bams are in ${DIR}/data/bams and fastq are in ${DIR}/data/fastq)
+Set some environmental variables
 
-	DIR=/home/tyler/Desktop/workshop_tmp
-	mkdir "$DIR/output"
-	IGV=/home/tyler/install/IGV_Linux_2.9.4/igv.sh
-	BAMLIST="$DIR/data/cichlid_bams.list"
-	CICHREF="$DIR/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa"
-	BAMDIR=/home/tyler/Desktop/workshop_tmp/data/bams
-	SCRIPTS=/home/tyler/teaching/Copenhagen_popgen_21/ngs_intro_exercises/scripts
+	# from your home directory
+	
+	mkdir ngs_intro
+	DIR=~/ngs_intro
+	mkdir $DIR/output
+	DATDIR=/ricco/data/tyler
+	IGV=$DATDIR/prog/IGV_Linux_2.9.4/igv.sh
+	BAMLIST=$DATDIR/cichlid_bams.list
+	CICHREF=$DATDIR/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa
+	BAMDIR=$DATDIR/bams
+	SCRIPTS=$DATDIR/scripts
 
 ## fastq
 
 Have a look inside one of the frog fastq files
 
-	less "$DIR/data/fastq/CH1401_R1.fastq"
+	less "$DATDIR/fastq/CH1401_R1.fastq"
 
 visualize data with [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/). You can get some help info with `fastqc --help`
 Will automatically detect file format type, but can specify with `-f`.
 
-	fastqc -outdir "$DIR/output/" $DIR/data/fastq/*.fastq
+	fastqc -outdir "$DIR/output/" $DATDIR/fastq/*.fastq
 	ll "$DIR/output/"
 
-normally you can scp the html files onto your local machine and view them in the web. It would look something like:
+You can scp the html files onto your local machine and view them in the web. It would look something like:
 
 ![fastq_preclean_example](./outputs/CH1401_R2_before.png)
 
@@ -37,7 +41,7 @@ Perhaps we have some adapter contamination to worry about so we can check this o
 	# visualize the extent of adapter contamination (this can take a moment to show up, be patient...)
 	eog "$DIR/output/CH1401_R2_fastqc/Images/adapter_content.png"
 
-Can you see what fastq is picking up on? About what percentage of reads show contamination?
+Can you see what fastq is picking up on? How is the contamination distributed along the read?
 
 ## clean fastq
 
@@ -47,17 +51,17 @@ just the reverse read that we examined for sake of time. Partial sums low-qualit
 Specifing Illumina TruSeq [adapters](https://support.illumina.com/bulletins/2016/12/what-sequences-do-i-use-for-adapter-trimming.html).
 
 	# paired-end mode
-	cutadapt3 -q 15 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minimum-length 36 \
+	cutadapt -q 15 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minimum-length 36 \
         -o "$DIR/output/CH1401_R1_clean.fastq.gz" -p "$DIR/output/CH1401_R2_clean.fastq.gz" \
-	"$DIR/data/fastq/CH1401_R1.fastq" "$DIR/data/fastq/CH1401_R2.fastq"
+	"$DATDIR/fastq/CH1401_R1.fastq" "$DATDIR/fastq/CH1401_R2.fastq"
 
 	# single-end mode
 
-	#cutadapt3 -q 15 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA --minimum-length 36 \
-        #-o "$DIR/output/CH1401_R1_clean_se.fastq.gz" "$DIR/data/fastq/CH1401_R1.fastq"
+	#cutadapt -q 15 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA --minimum-length 36 \
+        #-o "$DIR/output/CH1401_R1_clean_se.fastq.gz" "$DATDIR/fastq/CH1401_R1.fastq"
 
 	#cutadapt3 -q 15 -a AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minimum-length 36 \
-	#-o "$DIR/output/CH1401_R2_clean.fastq.gz" "$DIR/data/fastq/CH1401_R2.fastq"
+	#-o "$DIR/output/CH1401_R2_clean.fastq.gz" "$DATDIR/fastq/CH1401_R2.fastq"
 
 
 use fastqc to check what the data quality looks like for CH1401_R2.fasq after trimming
@@ -72,13 +76,13 @@ We can see that cutadapt did a good job of cleaning up the data
 
 Use [bwa](https://github.com/lh3/bwa) to map the reads to the imitator exome assembly. 
 
-	FROG_REF="$DIR/data/ref/imi_combined_targetedAndflanking_geneid.fasta"
+	FROG_REF="$DATDIR/ref/imi_combined_targetedAndflanking_geneid.fasta"
 
-	# index reference assembly (this will take a couple of minutes)
-	bwa index "$FROG_REF"
+	# normally you'd have to index the reference assembly (this has already been done for you, so skip the line below)
+	# bwa index "$FROG_REF"
 
 	# generated sorted bam
-	~/install/bwa/bwa mem -R '@RG\tID:CH1401_capture1\tSM:CH1401' "$FROG_REF" "$DIR/output/CH1401_R1_clean.fastq.gz" "$DIR/output/CH1401_R2_clean.fastq.gz" \
+	bwa mem -R '@RG\tID:CH1401_capture1\tSM:CH1401' "$FROG_REF" "$DIR/output/CH1401_R1_clean.fastq.gz" "$DIR/output/CH1401_R2_clean.fastq.gz" \
 	| samtools sort -O BAM > "$DIR/output/CH1401.bam"
 	# consider option -I from bioanalyzer for bwa
 
@@ -88,7 +92,7 @@ Use [bwa](https://github.com/lh3/bwa) to map the reads to the imitator exome ass
 ## Working with mapped data
 
 After you've mapped your cleaned-up fastq reads, you can have a look at the mapping information in SAM/BAM/CRAM files with samtools.
-You can include the header with `-h`. When viewing the file type '/\@RG' and press `enter` to skip down to the bottom of the header to check that the
+You can include the header with `-h`. When viewing the file type `/\@RG` and press `enter` to skip down to the bottom of the header to check that the
 read group information that we intended to add is indeed there. Note also that you should see 'RG:Z:CH1401_capture1' associated with all of the reads
 from this sample now as well.
 
@@ -108,7 +112,8 @@ of these first five reads?
 Now, we are going to switch over to some WGS cihlid data and you'll see it's basically the same, but mapping to a more complete reference
 will allow us to make some interesting inferences as you will see...
 
-	samtools view "$DIR/data/bams/CMASS6169443.bam" | less -S
+	# note the header won't show up because we omit -h
+	samtools view "$BAMDIR/CMASS6169443.bam" | less -S
 
 The first 5 lines, `samtools view "$DIR/data/bams/CMASS6169443.bam | head -n 5` should look like
 
@@ -121,6 +126,9 @@ The first 5 lines, `samtools view "$DIR/data/bams/CMASS6169443.bam | head -n 5` 
 ## samtools mpileup
 
 Lets looks at the mapped data on chr7:10,000-10,015
+
+	# check out the bam list
+	cat "$BAMLIST"
 
 	samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10015 | less -S
 
@@ -146,7 +154,10 @@ Here's what the data looks like for the first 6 individuals in the bam file, `sa
 Looking at this data do you think you could confidently call genotypes?
 
 Now figure out how to generate the same pileup but one that includes mapping quality and that only consider reads with a minimum quality/BAQ of 20.
-Write the output to a file called 'mapq_example.pileup' in the 'output' ${DIR}/output/
+Write the output to a file called 'mapq_example.pileup' in the 'output' ${DIR}/output/ <br>
+
+You can see help for samtools mpileup with
+	samtools mpileup --help
 
 <details>
 
@@ -155,7 +166,7 @@ Write the output to a file called 'mapq_example.pileup' in the 'output' ${DIR}/o
 ``` bash
 samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10015 -Q 20 --output-MQ > $DIR/output/mapq_example.pileup
 
-# examine the file in an easy-to-read way
+# examine the file in an easy-to-read way (aligns the columns nicely)
 cat $DIR/output/mapq_example.pileup | column -t | less -S
 ```
 
@@ -166,15 +177,18 @@ cat $DIR/output/mapq_example.pileup | column -t | less -S
 A useful way to visualize mapping information is with the Integrative Genomics Viewer (IGV)
 
 	# start up igv
-	# $IGV
+	$IGV
+
+	# SKIP THE FOLLOWING
 	# load reference genome
-	# In top menu: 'Genomes' -> 'Load Genome from File...' and select XXX/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa (give it a little time to load the genome)
+	# In top menu: 'Genomes' -> 'Load Genome from File...' and select XXX/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa
 	# load BAM
 	# In top menu: 'File' -> 'Load from File...' select XXX/CMASS6607991.bam
-	# GO STRAIGH TO HERE: Load session
+	
+
+	# 'File -> Open session... -> /ricco/data/tyler/igv_sessions/CMASS6607991.xml' 
 	# In the box next to 'Go' type 'chr7:18,078,500-18,102,000' and press 'Go'
 	# Right-click on the track containing the reads in the IGV window and select 'view as pairs' and 'Group alignment by' -> 'pair orientation'
-	# click the button with the circle with four arrows pointing at it 'Resize tracks to fit in window.'
 	# click on one of the green reads and figure out where its mate maps
 
 <details>
@@ -210,7 +224,7 @@ BAM6=$BAMDIR/CMASS6169443.bam # proper mapping
 # calculate relative depth and plot a depth profile
 # calmas_meta_sub.txt file contains cichlid metadata, including average genome-wide sequence depth
 
-$SCRIPTS/plot_depth_region.R $DIR/output/cichlid_region_depth.txt $DIR/data/calmas_meta_sub.txt $DIR/output/region_depth_profile
+$SCRIPTS/plot_depth_region.R $DIR/output/cichlid_region_depth.txt $DATDIR/calmas_meta_sub.txt $DIR/output/region_depth_profile
 ```
 <details>
 
@@ -293,7 +307,7 @@ First let's generate a distribution of the total site depth
 Generate a VCF with some info that we can filter on
 
 ```bash
-bcftools mpileup -f $DIR/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa -b $DIR/data/cichlid_bams.list \
+bcftools mpileup -f $CICHREF -b $BAMLIST \
 -d 40000 -L 40000 -r chr7:1-50000 -q 13 -Q 13 --ff UNMAP,SECONDARY,QCFAIL,DUP -a FORMAT/AD,FORMAT/DP,QS,FORMAT/SCR,INFO/AD,INFO/SCR -p O u \
 | bcftools call --ploidy 2 -a PV4,GQ,GP -m -P 0.001 -O u | bcftools +fill-tags -O b -o $DIR/output/calmas_allsites.bcf.gz -- -t'AF,NS,ExcHet'
 ```
