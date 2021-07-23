@@ -14,6 +14,7 @@ Set some environmental variables
 	CICHREF=$DATDIR/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa
 	BAMDIR=$DATDIR/bams
 	SCRIPTS=$DATDIR/scripts
+	BCFTOOLS=$DATDIR/prog/bin/bcftools
 
 ## fastq
 
@@ -302,34 +303,107 @@ Tandem duplication of gsdf gene, which generates males. <br>
 
 ## bcftools filtering
 
-First let's generate a distribution of the total site depth
-
 Generate a VCF with some info that we can filter on
 
 ```bash
-bcftools mpileup -f $CICHREF -b $BAMLIST \
+$BCFTOOLS mpileup -f $CICHREF -b $BAMLIST \
 -d 40000 -L 40000 -r chr7:1-50000 -q 13 -Q 13 --ff UNMAP,SECONDARY,QCFAIL,DUP -a FORMAT/AD,FORMAT/DP,QS,FORMAT/SCR,INFO/AD,INFO/SCR -p O u \
-| bcftools call --ploidy 2 -a PV4,GQ,GP -m -P 0.001 -O u | bcftools +fill-tags -O b -o $DIR/output/calmas_allsites.bcf.gz -- -t'AF,NS,ExcHet'
+| $BCFTOOLS call --ploidy 2 -a PV4,GQ,GP -m -P 0.001 -O u | $BCFTOOLS +fill-tags -O b -o $DIR/output/calmas_allsites.bcf.gz -- -t'AF,NS,ExcHet'
 ```
 The vcf is in compressed binary fomat to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
 can use to filter on.
 
-	bcftools view $DIR/output/calmas_allsites.bcf.gz | less -S
+	$BCFTOOLS view $DIR/output/calmas_allsites.bcf.gz | less -S
 
 Lets see how we could extract some information for quantities we might want to examine the distribution of prior to filtering.
 
 ``` bash
 ((echo -e "CHROM\tPOS\tDP\tMQ\tSTRAND_BIAS\tBASEQ_BIAS\tMQ_BIAS\tPOS_BIAS\tEXCHET"); \
-(bcftools query -f "%CHROM\t%POS\t%INFO/DP\t%INFO/MQ\t%INFO/PV4{0}\t%INFO/PV4{1}\t%INFO/PV4{2}\t%INFO/PV4{3}\t%ExcHet\n" $DIR/output/calmas_allsites.bcf.gz)) > $DIR/output/allsites_stats.txt
+($BCFTOOLS query -f "%CHROM\t%POS\t%INFO/DP\t%INFO/MQ\t%INFO/PV4{0}\t%INFO/PV4{1}\t%INFO/PV4{2}\t%INFO/PV4{3}\t%ExcHet\n" $DIR/output/calmas_allsites.bcf.gz)) > $DIR/output/allsites_stats.txt
+
+# Have a look ('.' indicates that the value is missing)
+less $DIR/output/allsites_stats.txt
+
+# let's plot these values and examine percentiles to get an idea of extremes
+$SCRIPTS/plotStatDist.R $DIR/output/allsites_stats.txt $DIR/output/allsites_stats_plot
+
+evince $DIR/output/allsites_stats_plot.pdf
 ```
+
+<details>
+
+<summary> Click here for the plotStatDist.R code </summary>
+
+```bash
+#!/usr/bin/env Rscript
+
+# plotStatDist.R <file of vcf stats> <outfile prefix>
+
+# parse arguments
+args <- commandArgs(trailingOnly=TRUE)
+df <- read.table(args[1],head=TRUE, na.strings=".")
+suppressWarnings(df$EXCHET <- as.numeric(as.character(df$EXCHET))) # need this because R interprets this as a 'factor' due to many 'NA' at beginning
+outprefix <- args[2]
+
+# calculate percentiles
+percdf=matrix(nrow=ncol(df)-2, ncol=13)
+i=1
+for (j in 3:ncol(df)) { percdf[i,] = quantile(df[,j], c(0.001, 0.01, seq(from=0.1, to=0.9, by=0.1), 0.99, 0.999), na.rm=TRUE); i=i+1 }
+colnames(percdf) = names(quantile(df$DP, c(0.001, 0.01, seq(from=0.1, to=0.9, by=0.1), 0.99, 0.999), na.rm=TRUE))
+rownames(percdf) = colnames(df[3:ncol(df)])
+
+# print quantiles
+cat("\n\nPercentiles\n\n")
+print(percdf); cat("\n")
+
+# plot stats
+pdf(file=paste0(outprefix,".pdf"))
+par(mfrow=c(2,2))
+hist(df$DP, breaks=20, ylab="Number sites", xlab="Total site depth", main="DP", cex.lab=1.2)
+hist(df$MQ, breaks=20, ylab="Number sites", xlab="Mapping quality", main="MQ", cex.lab=1.2)
+hist(df$STRAND_BIAS, breaks=20, ylab="Number sites", xlab="Strand bias p-value", main="PV[0]", cex.lab=1.2)
+hist(df$BASEQ_BIAS, breaks=20, ylab="Number sites", xlab="Base quality p-value", main="PV[1]", cex.lab=1.2)
+hist(df$BASEQ_BIAS, breaks=10000, ylab="Number sites", xlab="Base quality p-value", main="PV[1] Zoom", cex.lab=1.2, xlim=c(0,0.001))
+hist(df$MQ_BIAS, breaks=20, ylab="Number sites", xlab="Mapping quality bias p-value", main="PV[2]", cex.lab=1.2)
+hist(df$POS_BIAS, breaks=20, ylab="Number sites", xlab="tail distance bias p-value", main="PV[3]", cex.lab=1.2)
+hist(df$EXCHET, breaks=20, ylab="Number sites", xlab="Excess heterozygosity p-value", main="ExcHet", cex.lab=1.2)
+invisible(dev.off())
+```
+
+</details>
 
 Filter the VCF. We'll avoid dumping another VCF with just sites that pass our quality controls by extracting just the sites.
 We can use these sites with ANGSD tomorrow.
 
-| bcftools view -T ^/space/s2/diana/Rimitator/sites_290421/exclude_sites.bed -i 'N_PASS(FMT/DP[0-32] > 2) > 14 && N_PASS(FMT/DP[33-65] > 2) > 14 && N_PASS(FMT/DP[66-123] > 2) > 14' 
-| bcftools view -e 'INFO/BandMisMap > 500 || INFO/StripeMisMap > 500 || INFO/AdmixMisMap > 500 || INDEL=1 || INFO/MQ < 30 || INFO/DP > 20000 || INFO/PV4[0] < 1e-100 || INFO/PV4[1] < 1e-100 || INFO/PV4[2] < 1e-100 || INFO/PV4[3] < 1e-100 || INFO/ExcHet < 1e-3' -M 2 | bcftools query -f "%CHROM\t%POS\n" > /space/s2/diana/Rimitator/sites_290421/imi_model_allsites_set1.pos
+```bash
+$BCFTOOLS norm -f $CICHREF -m +any $DIR/output/calmas_allsites.bcf.gz \
+| $BCFTOOLS view -i 'N_PASS(FMT/DP[0-14] > 2) > 5 && N_PASS(FMT/DP[15-39] > 2) > 5' $DIR/output/calmas_allsites.bcf.gz \
+| $BCFTOOLS view -e 'INDEL=1 || INFO/MQ < 25 || INFO/DP > 1000 || INFO/PV4[0] < 6e-5 || INFO/PV4[1] < 4e-31 || INFO/PV4[2] < 4e-40 || INFO/PV4[3] < 2e-3 || INFO/ExcHet < 1e-10' -M 2 \
+| $BCFTOOLS query -f "%CHROM\t%POS\n" > $DIR/output/qc_sites.pos
 
-bcftools view -i 'N_PASS(FMT/DP[0-14] > 2) > 5 && N_PASS(FMT/DP[15-39] > 2) > 5' $DIR/output/calmas_allsites.bcf.gz | bcftools view -e 'INDEL=1 || INFO/MQ < 30 || INFO/DP > 4000 || INFO/PV4[0] < 1e-100 || INFO/PV4[1] < 1e-100 || INFO/PV4[2] < 1e-100 || INFO/PV4[2] < 1e-100 || INFO/PV4[3] < 1e-100 || INFO/ExcHet < 1e-3' -M 2 | bcftools query -f "%CHROM\t%POS\n" > $DIR/output/qc_sites.pos
+# Lets have a look at our list of quality-controlled sites
+less $DIR/output/qc_sites.pos
 
+# If we want to use these sites in ANGSD (tomorrow), we need to index them
+angsd sites index $DIR/output/qc_sites.pos
+```
 
-You could bypass dumping the initial VCF entire using one large strong pipes. Give it a try.
+What pecentage of site was removed (discounting those with entirely missing data)?
+
+<details>
+
+<summary> Click here for help </summary>
+
+```bash
+$BCFTOOLS query -f "%POS\n" $DIR/output/calmas_allsites.bcf.gz | wc -l
+# 48505 sites had some data initially
+
+wc -l $DIR/output/qc_sites.pos
+# 43602 sites passed quality-control
+```
+
+Therefore, we removed 4903 sites, which represents ~10% of the sites with data. This seems reasonable.
+
+</details>
+
+You could bypass dumping the initial VCF entirely using one large string of pipes. Give it a try.
