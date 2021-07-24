@@ -37,7 +37,7 @@ options by running
 
 <details>
 
-<summary> click here for bam parshing options </summary>
+<summary> click here for bam parsing options </summary>
 
 ```bash
 $ $ANGSD -bam
@@ -156,7 +156,7 @@ echo "$(($(zcat $DIR/output/calmas_region.glf.gz | head -n1 | wc -w)-2))"
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
 echo "$INDNUM"
 
-# So this is individual is at row 25 in the bam list. Now we can extract their likelihoods.
+# So this individual is at row 25 in the bam list. Now we can extract their likelihoods.
 
 zcat $DIR/output/calmas_region.glf.gz | head -n1 | cut -f 3- | perl -se '$start=($n-1)*10; @arr = split(/\t/,<>); print "@arr[$start .. $start+9]\n"' -- -n=$INDNUM
 ```
@@ -168,9 +168,74 @@ have a value of 0. For CMASS6608007 the 5th likelihood is zero, corresponding to
 ## allele frequency estimation
 
 Now will estimate allele frequencies using the GLs we just calculated as input. Note that you can use the bams as input again,
-but you'd have to recalculate the likelihoods (with `-GL` as before), which is redundant.
+but you'd have to recalculate the likelihoods (with `-GL` as before), which is redundant. If we do supply GLs as input we also
+need to provide the number of individuals in the GL file, `-nInd`, and the reference index file, `-fai`.
 
-## Dxy
+We can get some information about how to estimate allele frequencies with `$ANGSD -doMaf`.
+
+	-doMaf	0 (Calculate persite frequencies '.mafs.gz')
+		1: Frequency (fixed major and minor)
+		2: Frequency (fixed major unknown minor)
+		4: Frequency from genotype probabilities
+		8: AlleleCounts based method (known major minor)
+		NB. Filedumping is supressed if value is negative
+
+It's also useful to know how ANGSD can identify major and minor alleles, `$ANGSD -doMajorMinor`
+
+	-doMajorMinor	0
+	1: Infer major and minor from GL
+	2: Infer major and minor from allele counts
+	3: use major and minor from a file (requires -sites file.txt)
+	4: Use reference allele as major (requires -ref)
+	5: Use ancestral allele as major (requires -anc)
+	6: Use EBD for major and minor (requires read data)
+	7: Use EBD for minor (Major is ref) (requires -ref and read data, (similar to SAMtools))
+	-rmTrans: remove transitions 0
+	-skipTriallelic	0
+
+
+We'll use `-doMajorMinor 1` to have ANGSD figure out what the major and minor alleles are from the GLs and then, based on these 
+identified, alleles calculate their allele frequencies with `-doMaf 1`. If we wanted to account for more uncertainty in the 
+identificaton of what the minor allele is we could use `-doMaf 2`. This latter approach would take a bit longer since there would
+be three minor alleles to consider instead of just one. We'll also skip any sites that appear to have more than 2 alleles with
+`-skipTriallelic 1` (though we should have filtered these out already with our qc_sites.pos file).
+
+```bash
+$ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
+-doMajorMinor 1 -doMaf 1 -skipTriallelic 1 -out $DIR/output/calmas_region_af
+```
+
+Check out the output. The columns are<br>
+(1) chromosome<br>
+(2) position<br>
+(3) major allele<br>
+(4) minor allele<br>
+(5) maximum likelihood estimate of the minor allele frequency<br>
+(6) the number of individuals with data<br>
+
+	less $DIR/output/calmas_region_af.mafs.gz
+
+Here's the first 5 sites:
+	chromo	position	major	minor	knownEM	nInd
+	chr7	21603	C	A	0.000001	27
+	chr7	21604	A	T	0.003746	28
+	chr7	21605	C	A	0.000001	28
+	chr7	21606	T	A	0.000001	29
+	chr7	21607	C	A	0.000001	29
+
+Now that you know how to extract allele frequencies, one interesting thing we could do is estimate the absolute divergence 
+between the two ecomorphs of Astatotilapia calliptera in your data. Specifcally, we can use the allele frequencies
+in the respective ecomorphs to calculate Dxy, which is the average number of pairwise nucleotide differences between them.
+It's important for this calculation that for each site we estimate the allele frequency for the *same* allele in both ecomorphs.
+In order to do this we can set which allele is the major allele using `-doMajorMinor 4`, which will assume that the reference allele
+is major (which may not be true, but that's okay because we are just wanting to differentiate between alleles). Then for a biallelic 
+site, the "minor" (or other) allele will be the same in both ecomorphs. We need to do this because the *actual* major, i.e. the most
+frequent allele, in the ecomorphs could be different. So, let's get start...
+<br>
+We need a maf file for each ecomorph, so let's start by generating this for the littoral morphs. The GL file has been split into two,
+one with just littoral indidividuals (XXX) and another with just benthic individuals (XXX)
+
+```
 
 ## Genotype posteriors and calling
 
