@@ -229,15 +229,93 @@ in the respective ecomorphs to calculate Dxy, which is the average number of pai
 It's important for this calculation that for each site we estimate the allele frequency for the *same* allele in both ecomorphs.
 In order to do this we can set which allele is the major allele using `-doMajorMinor 4`, which will assume that the reference allele
 is major (which may not be true, but that's okay because we are just wanting to differentiate between alleles). Then for a biallelic 
-site, the "minor" (or other) allele will be the same in both ecomorphs. We need to do this because the *actual* major, i.e. the most
-frequent allele, in the ecomorphs could be different. So, let's get start...
+site, the "minor" (or other) allele will be the same in both ecomorphs. Note that the minor allele is inferred from the GLs. We need 
+to do this because the *actual* major, i.e. the most frequent allele, in the ecomorphs could be different. So, let's get started...
 <br>
-We need a maf file for each ecomorph, so let's start by generating this for the littoral morphs. The GL file has been split into two,
-one with just littoral indidividuals (XXX) and another with just benthic individuals (XXX)
+We need a maf file for each ecomorph, so let's start by generating this for the littoral morphs. We could simply split the glf file
+containing all individuals into a file with only littoral GLs and another with only benthic GLs. Alternatively, we can calculate
+the allele frequencies using two different bam lists as input, which is what we'll do here. The bam list for littoral individuals is
+/ricco/data/tyler/littoral_bams.list and the bam list for benthics is /ricco/data/tyler/benthic_bams.list.
 
+```bash
+# estimate littoral morph allele frequencies (-ref is required for -doMajorMinor 4)
+
+$ANGSD -b $DATDIR/littoral_bams.list -ref $CICHREF -r chr7:20000-40000 -sites ~/ngs_intro/output/qc_sites.pos \
+-remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
+-GL 1 -doMajorMinor 4 -doMaf 2 -out $DIR/output/calmas_region_af_littoral
+
+# estimate benthic morph allele frequencies
+
+$ANGSD -b $DATDIR/benthic_bams.list -ref $CICHREF -r chr7:20000-40000 -sites ~/ngs_intro/output/qc_sites.pos \
+-remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
+-GL 1 -doMajorMinor 4 -doMaf 2 -out $DIR/output/calmas_region_af_benthic
 ```
+Take a look at these new maf files, you'll notice that there is an additional column specifying the reference allele since we included 
+`-ref` in these runs. The major allele should match the ref allele since we used `doMajorMinor 4`.
+<br>
+Now we'll use these maf files as input to a program, dxyWindow, in order to calculate Dxy in XX kb windows. dxyWindow belongs to a 
+suite of tools (https://github.com/tplinderoth/PopGenomicsTools) that can be used to perform various population genetic analyses.
+You can enter `$DATDIR/prog/bin/dxyWindow` to see some help for the program:
 
-## Genotype posteriors and calling
+	dxyWindow [options] <pop1 maf file> <pop2 maf file>
+	
+	Options:
+	-winsize      INT     Window size in base pairs (0 for global calculation) [0]
+	-stepsize     INT     Number of base pairs to progress window [0]
+	-minind       INT     Minimum number of individuals in each population with data [1]
+	-fixedsite    INT     (1) Use fixed number of sites from MAF input for each window (window sizes may vary) or (0) constant window size [0]
+	-sizefile     FILE    Two-column TSV file with each row having (1) chromsome name (2) chromosome size in base pairs
+	-skip_missing INT     Do not print windows with zero effective sites if INT=1 [0]
+	
+	Notes:
+	* -winsize 1 -stepsize 1 calculates per site dxy
+	* -sizefile is REQUIRED(!) with -fixedsite 0 (the default)
+	* Both input MAF files need to have the same chromosomes in the same order
+	* Assumes SNPs are biallelic across populations
+	* For global Dxy calculations only columns 4, 5, and 6 below are printed
+	* Input MAF files can contain all sites (including monomorphic sites) or just variable sites
+	* -fixedsite 1 -winsize 500 would for example ensure that all windows contain 500 SNPs
+	
+	Output:
+	(1) chromosome
+	(2) Window start
+	(3) Window end
+	(4) dxy
+	(5) number sites in MAF input that were analyzed
+	(6) number of sites in MAF input that were skipped due to too few individuals
+
+If you want to see what the `-sizefile` for the fAstCal1.2 reference genome looks like you can check it out: `cat $DATDIR/ref/fAstCal1.2_chr_lengths.txt`
+Now, let's run dxyWindow.
+
+```bash
+$DATDIR/prog/bin/dxyWindow -winsize 10000 -stepsize 1250 -fixedsite 0 -sizefile $DATDIR/ref/fAstCal1.2_chr_lengths.txt -skip_missing 1 \
+$DIR/output/calmas_region_af_littoral.mafs.gz $DIR/output/calmas_region_af_benthic.mafs.gz > $DIR/output/calmas_ecomorph_dxy.txt
+``` 
+The global Dxy printed to the screen states that there are on average ~4.38 nucleotide differences in 15,754 sites when comparing
+littoral to benthic individuals. This means that there are approximately only 0.0003 average pairwise differences per site, which 
+is very low and so indicates that these ecomorphs are likely quite genetically similar. This is only based on a small region and 
+in practice you'd want to make this inference across the genome. Accordingly, looking at how Dxy is distributed across the genome, 
+i.e. where the ecomorphs appear to be particularly divergent or similar could provide evidence for selection or introgression,
+respectively.
+
+You can see what Dxy looked like in 10 kb windows when sliding along our small example region in increments of 5 kb.
+
+	cat $DIR/output/calmas_ecomorph_dxy.txt
+
+## call SNPs
+
+At this point you're probably all amped up to actually call SNPs right? You're in luck because that's exactly what we're going to do.
+You can statistically test for whether a site is variable in ANGSD using a likelihood ratio (LR) test, which compares the likelihood that the 
+minor allele frequency (MAF) is zero (the null) to the likelihood of the estimated MAF (`-doMaf`). Under the null, -2log(LR statistic) 
+is distributed according to a chi-square(1 d.f.), and so we can calculate a p-value for whether the estimated MAF is statistically 
+different from zero, in which case the site is a SNP.
+<br>
+You can call SNPs based on a particular p-value cutoff using `SNP_pval`, so that's what we'll do.
+
+$ANGSD 
+
+
+## Genotype posteriors and calling	
 
 ## PCA
 
