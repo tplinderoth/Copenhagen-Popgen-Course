@@ -16,6 +16,7 @@ Set some environmental variables
 	BAMDIR=$DATDIR/bams
 	SCRIPTS=$DATDIR/scripts
 	BCFTOOLS=$DATDIR/prog/bin/bcftools
+	ANGSD=/ricco/data/tyler/prog/bin/angsd
 
 ## fastq
 
@@ -304,11 +305,11 @@ Tandem duplication of gsdf gene, which generates males. <br>
 
 ## bcftools filtering
 
-Generate a VCF with some info that we can filter on
+Generate a VCF with some info that we can filter on: the first 1 MB of chr7 (this will take around 1 minute).
 
 ```bash
 $BCFTOOLS mpileup -f $CICHREF -b $BAMLIST \
--d 40000 -L 40000 -r chr7:1-50000 -q 13 -Q 13 --ff UNMAP,SECONDARY,QCFAIL,DUP -a FORMAT/AD,FORMAT/DP,QS,FORMAT/SCR,INFO/AD,INFO/SCR -p O u \
+-d 40000 -L 40000 -r chr7:1-1000000 -q 13 -Q 13 --ff UNMAP,SECONDARY,QCFAIL,DUP -a FORMAT/AD,FORMAT/DP,QS,FORMAT/SCR,INFO/AD,INFO/SCR -p O u \
 | $BCFTOOLS call --ploidy 2 -a PV4,GQ,GP -m -P 0.001 -O u | $BCFTOOLS +fill-tags -O b -o $DIR/output/calmas_allsites.bcf.gz -- -t'AF,NS,ExcHet'
 ```
 The vcf is in compressed binary fomat to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
@@ -379,14 +380,14 @@ We can use these sites with ANGSD tomorrow.
 ```bash
 $BCFTOOLS norm -f $CICHREF -m +any $DIR/output/calmas_allsites.bcf.gz \
 | $BCFTOOLS view -i 'N_PASS(FMT/DP[0-14] > 2) > 5 && N_PASS(FMT/DP[15-39] > 2) > 5' $DIR/output/calmas_allsites.bcf.gz \
-| $BCFTOOLS view -e 'INDEL=1 || INFO/MQ < 25 || INFO/DP > 1000 || INFO/PV4[0] < 6e-5 || INFO/PV4[1] < 4e-31 || INFO/PV4[2] < 4e-40 || INFO/PV4[3] < 2e-3 || INFO/ExcHet < 1e-10' -M 2 \
+| $BCFTOOLS view -e 'INDEL=1 || INFO/MQ < 25 || INFO/DP > 700 || INFO/PV4[0] < 1.2e-02 || INFO/PV4[1] < 6.4e-21 || INFO/PV4[2] < 2.8e-45 || INFO/PV4[3] < 2.7e-3 || INFO/ExcHet < 5e-06' -M 2 \
 | $BCFTOOLS query -f "%CHROM\t%POS\n" > $DIR/output/qc_sites.pos
 
 # Lets have a look at our list of quality-controlled sites
 less $DIR/output/qc_sites.pos
 
 # If we want to use these sites in ANGSD (tomorrow), we need to index them
-angsd sites index $DIR/output/qc_sites.pos
+$ANGSD sites index $DIR/output/qc_sites.pos
 ```
 
 What pecentage of site was removed (discounting those with entirely missing data)?
@@ -397,13 +398,13 @@ What pecentage of site was removed (discounting those with entirely missing data
 
 ```bash
 $BCFTOOLS query -f "%POS\n" $DIR/output/calmas_allsites.bcf.gz | wc -l
-# 48505 sites had some data initially
+# 995197 sites had some data initially
 
 wc -l $DIR/output/qc_sites.pos
-# 43602 sites passed quality-control
+# 900037 sites passed quality-control
 ```
 
-Therefore, we removed 4903 sites, which represents ~10% of the sites with data. This seems reasonable.
+Therefore, we removed 95160 sites, which represents ~10% of the sites with data. This seems reasonable.
 
 </details>
 
