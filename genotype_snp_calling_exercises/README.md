@@ -6,6 +6,7 @@ Make directories and set environmental variables for this session
 ```bash
 mkdir ngs_analysis
 mkdir ~/ngs_analysis/output
+
 DIR=~/ngs_analysis
 DATDIR=/ricco/data/tyler
 BAMLIST=$DATDIR/cichlid_bams.list
@@ -104,7 +105,7 @@ documentation setting this to 50 for reads mapped with BWA. `-baq` and `-C` requ
 Another useful option can be `-minInd X` in conjunction with `-minIndDepth Y`, which will require at least **X** individuals to be
 covered by at least **Y** (default 1) reads to keep a site. We already applied this type of filter yesterday in a bit more of a sophisted way:
 We required at least 5 individuals from *each* ecomorph to be covered by at least 2 reads in order for the site to pass QC. Note that in
-ANGSD version 0.935-48-gff0c042 `-minIndDepth` is not recognized, but `-minInd` can still be used (the default required individual coverage of
+ANGSD version 0.935-48-gff0c042 `-minIndDepth` is not recognized, but `-minInd` can still be used (the default required individual depth of
 1 will be used).
 
 Looking at the standard output what percentage of the sites provided to ANGSD were actually retained?
@@ -125,4 +126,52 @@ ANGSD always dumps a log file with information on how it was run. Check it out:
 
 	less $DIR/output/calmas_region.arg
 
-TEST
+Have a look at the GLs. The first two columns are the reference sequence (e.g. chromososome) and position. Then you have 10 likelihoods
+for all possible genotypes in the order AA,AC,AG,AT,CC,CG,CT,GG,GT,TT. This set of 10 likelihoods is repeated sequentially starting from
+the left of the file for each individual in the row order of individuals in the BAM file. The values are log-scaled likelihood ratios,
+all scaled by the most likely genotype.
+
+	less -S $DIR/output/calmas_region.glf.gz
+
+We are analyzing 40 individuals, so we should have 402 fields in the glf file. You should confirm this and try to print the likelihoods
+for the individual called CMASS6608007 at the first site (each bam file is named by the individual, i.e. <idividual ID>.bam). What is 
+their most likely genotype? If you need help you can click below.
+
+<details>
+
+<summary> click for help extracting GL info </summary>
+
+```bash
+# Count number of columns and subtract 2 (chromosome and position fields) to get the number of likelihood values
+
+echo "$(($(zcat $DIR/output/calmas_region.glf.gz | head -n1 | wc -w)-2))"
+
+# You should see that indeed there are 400 likelihood values.
+# figure out what line CMASS6607982 is in the bam list.
+
+INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
+echo "$INDNUM"
+
+# So this is individual is at row 25 in the bam list. Now we can extract their likelihoods.
+
+zcat $DIR/output/calmas_region.glf.gz | head -n1 | cut -f 3- | perl -se '$start=($n-1)*10; @arr = split(/\t/,<>); print "@arr[$start .. $start+9]\n"' -- -n=$INDNUM
+```
+Since the likelihoods have been scaled to the most likely and log-transformed, the most likely genotype will
+have a value of 0. For CMASS6608007 the 5th likelihood is zero, corresponding to the genotype 'CC'.
+
+</details>
+
+## allele frequency estimation
+
+Now will estimate allele frequencies using the GLs we just calculated as input. Note that you can use the bams as input again,
+but you'd have to recalculate the likelihoods (with `-GL` as before), which is redundant.
+
+## Dxy
+
+## Genotype posteriors and calling
+
+## PCA
+
+## SFS
+-compare to expected SFS
+-joint SFS?
