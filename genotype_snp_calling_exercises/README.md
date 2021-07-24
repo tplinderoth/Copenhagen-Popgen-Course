@@ -4,8 +4,12 @@ Estimation of allele frequencies, SNP calling, and genotype calling from NGS dat
 Make directories and set environmental variables for this session
 
 ```bash
-mkdir ngs_analysis
+# set up directories
+
+mkdir ~/ngs_analysis
 mkdir ~/ngs_analysis/output
+
+# set environment variables
 
 DIR=~/ngs_analysis
 DATDIR=/ricco/data/tyler

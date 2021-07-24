@@ -2,12 +2,13 @@ INTRODUCTION TO NGS DATA EXERCISES
 ==================================
 
 Set some environmental variables
-
-	# from your home directory
 	
-	mkdir ngs_intro
+	# set up directories
+	mkdir ~/ngs_intro
+	mkdir ~/ngs_intro/output
+
+	# set environment variables
 	DIR=~/ngs_intro
-	mkdir $DIR/output
 	DATDIR=/ricco/data/tyler
 	IGV=$DATDIR/prog/IGV_Linux_2.9.4/igv.sh
 	BAMLIST=$DATDIR/cichlid_bams.list
