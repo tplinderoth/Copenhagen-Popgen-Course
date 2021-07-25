@@ -89,8 +89,8 @@ only calculate genotype likelihoods for the region spanning sites 1 to 600,000 o
 sites that we generated yesterday (if you don't have the sites file a copy is at /ricco/data/tyler/output/qc_sites.pos).
 Note that some options are on by default (e.g. -remove_bads), but we'll specify them to be explicit. We'll also specify some
 commonly-used filters that are redundant with the QC we performed to make the `-sites` file, since they will demonstrate
-how to these things if you want to be more stringent with your total site depth for example. *A sites files is not required 
-to run ANGSD.* Note that `-setMinDepth` and `-setMaxDepth` require reads to be counted, i.e. `-doCounts 1`. You should look 
+how to these things if you want to be more stringent with your total site depth for example. *A sites files is not required to run ANGSD*. 
+Note that `-setMinDepth` and `-setMaxDepth` require reads to be counted, i.e. `-doCounts 1`. You should look 
 through each of the arguments used a make sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters)
 <br>
 The GLs we calculate will use the SAMtools likelihood model `-GL 1` (see `$ANGSD -GL`) and output them as a text file
@@ -548,8 +548,233 @@ The called genotype is '0', meaning that this individuals is most probably 'CC'.
 
 ## PCA
 
+Let's do some quick biological inference now that you know how to call genotypes. We'll use ANGSD to calculate genotype posterior probabilities and
+output these to a binary file `-doGeno 32`, which we'll use an input to the progra ngsCovar in order to calculate a genetic covariance matrix 
+for all of the Lake Masoko *A. calliptera* individuals. ngsCovar is part of the [ngsTools](https://github.com/mfumagalli/ngsTools) software toolbox, 
+which is a set of programs for analyzing genetic data and particularly suited to working with ANGSD outputs. This covariance matrix will allow us to 
+perfrom a Principle Component Analysis (PCA) using our genetic data. We are not hard-calling gentoypes and so can better avoid snow-balling error 
+from incorrectly called genotypes. There are [other](http://www.popgen.dk/angsd/index.php/PCA) ways of performing PCA with ANGSD, so this is just a 
+demonstration of one approach.
+<br>
+First, we calculate genotype posteriors in binary format.
 
+```bash
+$ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
+-remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
+-GL 1 -doMajorMinor 1 -doMaf -1 -SNP_pval 1e-6 -skipTriallelic 1 -doPost 1 -doGeno 32 -out $DIR/output/calmas_region_genocall_binary
+```
+Second, we estimate a genetic covariance matrix among all individuals based on the genotype posterior probabilities with ngsCovar.
+
+	$DATDIR/prog/bin/ngsCovar
+	
+	Input:
+	-probfile: file with genotype posterior probabilities [required]
+	-outfile: name of output file [required], currently it is a text file, tab separated with n*n cells
+	-sfsfile: file with SFS posterior probabilities [required if you want to weight each site by its probability of being variable]
+	-nind: nr of individuals [required]
+	-nsites: nr of sites [required]
+	-norm: if 0 no normalization, if 1 matrix is normalized by (p(1-p)) as in Patterson et al 2006, if 2 normalization is 2p(1-p) [0]
+	-verbose: level of verbosity [0]
+	-block_size: how many sites per block when reading the input file [0]
+	-call: whether calling genotypes (1) or not (0) [0]
+	-offset: starting position of subset analysis [1]
+	-minmaf: filter out sites with estimated MAF less than minmaf or greater than 1-minmaf [0] (this filtering will be ignored when using the weighting approach
+	-genoquality: text file with nsites lines; each line has a 0 and 1; if 0 the program will ignore this site [NULL]
+
+You'll need to know the number of sites in your geno file. This can easily be counted from the mafs file if you outputted that. In this case 
+we can just count the number of lines in the text version of the geno file that we generated previously. We also need to unzip the geno file
+in order for ngsCovar to read it.
+
+```bash
+# Count sites in geno file
+NGENOSITES=$(($(zcat $DIR/output/calmas_region_genocall.geno.gz | wc -l)-1))
+
+# Unzip geno file
+gunzip $DIR/output/calmas_region_genocall_binary.geno.gz
+
+# Calculate covariance matrix
+$DATDIR/prog/bin/ngsCovar -probfile $DIR/output/calmas_region_genocall_binary.geno -nind 40 -nsites $NGENOSITES -norm 0 -call 0 -outfile $DIR/output/calmas.covar
+
+# You can check this 40 x 40 covariance matrix out if you want. The order of individuals
+# in the matrix corresponds to their order in the geno file.
+less -S $DIR/output/calmas.covar
+```
+Lastly, we'll perform eigen decomposition on this covariance matrix in R and plot the PCA.
+
+```bash
+$DATDIR/scripts/plotPCA.R $DIR/output/calmas.covar $DATDIR/calmas_meta_sub.txt $DIR/output/calmas_pca
+```
+Have a look at the PCA.
+
+```bash
+evince $DIR/output/calmas_pca.pdf
+```
+Now try estimating a new covariance matrix with only common variants, which we will call any SNPs with an allele frequency > 25%. On actual
+data you probably wouldn't set a minumum MAF this high since it would remove a lot of data, rather around 5%, but we'll be extreme here 
+for demonstration purposes.
+
+```bash
+$DATDIR/prog/bin/ngsCovar -minmaf 0.25 -probfile $DIR/output/calmas_region_genocall_binary.geno -nind 40 -nsites $NGENOSITES -norm 0 -call 0 -outfile $DIR/output/calmas_common.covar
+```
+
+Generate another PCA from this new covariance matrix
+
+```bash
+# Plot
+
+$DATDIR/scripts/plotPCA.R $DIR/output/calmas_common.covar $DATDIR/calmas_meta_sub.txt $DIR/output/calmas_common_pca
+
+# Examine the PCA
+
+evince $DIR/output/calmas_common_pca.pdf
+```
+
+Click below to view both PCA plots you've just generated along with one run using all SNPs across the genome with MAF >5% (the last plot includes all  
+individuals from the Masoko sex determination study with morph information).
+
+<details>
+
+<summary> click for PCA plots </summary>
+
+40 individuals chr7:1-60000 all SNPs
+
+40 individuals chr7:1-60000 SNPs > 25% MAF
+
+300 individuals, full genome, SNPs > 5% MAF
+
+</details>
+
+Describe how treating the data differently is influencing our view of population structure in Lake Masoko. Why do we see 
+such differences?
 
 ## SFS
--compare to expected SFS
--joint SFS?
+
+We will now learn how to estimate the site frequency spectrum (SFS), which is a very useful summary of the distribution of 
+allele frequencies in a population sample. The SFS can be informative about data quality, population demography, and selection.
+When ancestral alleles are known, one can "polarize" SNPs in terms of which alleles are ancestral and derived. You can supply an 
+ancestral FASTA sequence to ANGSD with the `-anc` argument, which it will use to polarize SNPs. This allows for calculating the 
+unfolded SFS, which considers allele frequency classes ranging from 1/2N to (2N-1)/2N, where N is the diploid sample size. In many 
+cases the ancestral allele may not be known, in which case we are limited to classifying alleles as major (more frequent) or 
+minor (rarer), and calculate the "folded" SFS. The folded SFS considers only allele frequency classes of 1/2N to 1/2. In the folded 
+case a site with an allele frequency of (2N-1)/2N is in an equivalent class as a 1/2N site, a (2N-2)/2N site is equivalent to a 2/2N 
+site, a (2N-3)/2N site is equivalent to a 3/2N site, up to a class of 1/2 allele frequency (the highest frequency a minor allele can 
+have by definition). The "folded" term spawns from these frequency equivalence classes since an unfolded SFS can be "folded" at the 
+middle (50% allele frequency class) to get the folded SFS.
+
+To calculate the SFS we first estimate the likelihood of every possible allele frequency for every site with `-doSaf 1`, which assumes 
+a HWE relationship between genotype and allele frequencies. For other `-doSaf` models see `$ANGSD -doSaf` or [here](http://www.popgen.dk/angsd/index.php/SFS_Estimation).
+. We do not know what the ancestral alleles are so will calculate the folded SFS by supplying the reference FASTA to `-anc` in place of an actual
+ancetral state FASTA in conjunction with specifying `-fold 1`
+
+```bash
+angsd -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
+-doSaf 1 -fold 1 -anc $CICHREF -out $DIR/output/calmas_region_folded
+
+# note: angsd v. 0.935 has a folding issue here, so we'll use angsd 0.921 at this step
+```
+This produces 3 files: a binary *.saf file which contains the log-scaled allele frequency likelihoods at all sites, it's associated *.saf.idx index file,
+and a binary *.pos file containing which sites are contained in the .saf file. You can have a look at the allele frequency likelihoods using 
+`realSFS`. The first two columns are chromosome, and position, followed by N+1 columns with the log likelihoods for allele frequencies 0, 1/2N, N.
+
+```bash
+$DATDIR/prog/bin/realSFS print $DIR/output/calmas_region_folded.saf.idx | less -S
+```
+<details>
+
+<summary> click for extended information on realSFS functionality </summary>
+
+	$DATDIR/prog/bin/realSFS
+
+	-> ---./realSFS------
+	-> EXAMPLES FOR ESTIMATING THE (MULTI) SFS:
+
+	-> Estimate the SFS for entire genome??
+	-> ./realSFS afile.saf.idx 
+
+	-> 1) Estimate the SFS for entire chromosome 22 ??
+	-> ./realSFS afile.saf.idx -r chr22 
+
+	-> 2) Estimate the 2d-SFS for entire chromosome 22 ??
+	-> ./realSFS afile1.saf.idx  afile2.saf.idx -r chr22 
+
+	-> 3) Estimate the SFS for the first 500megabases (this will span multiple chromosomes) ??
+	-> ./realSFS afile.saf.idx -nSites 500000000 
+
+	-> 4) Estimate the SFS around a gene ??
+	-> ./realSFS afile.saf.idx -r chr2:135000000-140000000 
+
+	-> Other options [-P nthreads -tole tolerence_for_breaking_EM -maxIter max_nr_iterations -bootstrap number_of_replications -resample_chr 0/1]
+
+	-> See realSFS print for possible print options
+	-> Use realSFS print_header for printing the header
+	-> Use realSFS cat for concatenating saf files
+
+	->------------------
+	-> NB: Output is now counts of sites instead of log probs!!
+	-> NB: You can print data with ./realSFS print afile.saf.idx !!
+	-> NB: Higher order SFS's can be estimated by simply supplying multiple .saf.idx files!!
+	-> NB: Program uses accelerated EM, to use standard EM supply -m 0 
+	-> Other subfunctions saf2theta, cat, check, dadi
+
+</details>
+
+Now find an estimate of the SFS which maximizes the probability of observing these per site allele frequency likelihoods.
+Be sure to specify `-fold 1` again in order to estimate the folded SFS. A useful option with `realSFS` is the ability to 
+specify specific regions in the usual ANGSD `-r` syntax. This enables you to investigate what the SFS looks like in a region 
+that you suspect may have experienced a selective sweep for example. Here we'll omit any region specification in order to
+estimate the global, "genome-wide" SFS.
+
+```bash
+$DATDIR/prog/bin/realSFS $DIR/output/calmas_region_folded.saf.idx > $DIR/output/calmas_region_folded.sfs
+```
+The output is a text file of the expected counts of sites in each minor allele frequency class 0, 1/2N, ..., N-1/N, N:
+
+```bash
+cat $DIR/output/calmas_region_folded.sfs
+```
+Let's visualize the SFS
+
+```bash
+$DATDIR/scripts/plotSFS.R $DIR/output/calmas_region_folded.sfs $DIR/output/calmas_region_folded
+```
+<details>
+
+<summary> click here for plotSFS.R code </summary>
+
+```bash
+#!/usr/bin/env Rscript
+
+# plotSFS.R <SFS file> <output prefix>
+
+# parse inputs
+args <- commandArgs(trailingOnly=TRUE)
+
+sfs <- scan(args[1])
+outprefix <- args[2]
+
+sfs = sfs[-1] # remove fixed category
+
+# plot
+pdf(file=paste0(outprefix,".pdf"),width=14,height=7)
+barplot(sfs, xlab="MAF", ylab="Number SNPs", names=1:length(sfs), cex.names=0.8, cex.axis=1.2, cex.lab=1.2)
+invisible(dev.off())
+```
+
+</detais>
+
+Look at the SFS for our small example region.
+
+```bash
+evince $DIR/output/calmas_region_folded.pdf
+```
+<details>
+
+<summary> click here in case you have trouble viewing the SFS </summary>
+
+![sfs_region_sfs](./outputs/calmas_region_folded.png)
+
+</details>
+
+This SFS looks very strange. Try to compare this SFS to an expected SFS from a neutrally evolving, constant-size
+population. We expect that the number of sites in each frequency category will be proportional to 1/x, where x is
+the number of chromosomes with the derived allele.
