@@ -295,6 +295,14 @@ Lets look at the depth plot
 ```bash
 evince "$DIR/output/region_depth_profile.pdf"
 ```
+<details>
+
+<summary> click here if you having trouble viewing the plot </summary>
+
+![region_depth_profile](./outputs/region_depth_profile.png)
+
+</details>
+
 What can you infer about the genomes of these six cichlids samples from the mapping information
 that you've seen in IGV and depth profiling?
 
