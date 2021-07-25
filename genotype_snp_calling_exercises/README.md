@@ -643,7 +643,7 @@ individuals from the Masoko sex determination study with morph information).
 40 individuals chr7:1-60000 SNPs > 25% MAF
 <br>
 ![calmas_region_PCA_common_variants](./outputs/calmas_common_variants_pca.png)
-<br><>br
+<br><br>
 300 individuals, full genome, SNPs > 5% MAF
 <br>
 ![calmas_genome_pca](./outputs/calmas_pca_all_full_genome.png)
