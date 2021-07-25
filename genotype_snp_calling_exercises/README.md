@@ -637,12 +637,15 @@ individuals from the Masoko sex determination study with morph information).
 <summary> click for PCA plots </summary>
 
 40 individuals chr7:1-60000 all SNPs
+<br>
 ![calmas_region_PCA_allsnps](./outputs/calmas_pca.png)
-
+<br><br>
 40 individuals chr7:1-60000 SNPs > 25% MAF
+<br>
 ![calmas_region_PCA_common_variants](./outputs/calmas_common_variants_pca.png)
-
+<br><>br
 300 individuals, full genome, SNPs > 5% MAF
+<br>
 ![calmas_genome_pca](./outputs/calmas_pca_all_full_genome.png)
 
 </details>
@@ -762,7 +765,7 @@ barplot(sfs, xlab="MAF", ylab="Number SNPs", names=1:length(sfs), cex.names=0.8,
 invisible(dev.off())
 ```
 
-</detais>
+</details>
 
 Look at the SFS for our small example region.
 
