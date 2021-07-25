@@ -85,7 +85,7 @@ Examples for region specification:
 <br>
 Now lets calculate the genotype likelihoods. ANGSD provides the option to run it's analyses over a region
 (see `$ANGSD -bam` for region specifications) and/or a subset of sites with `sites`. So, let's say we want to
-only calculate genotype likelihoods for the region spanning sites 20,000 to 40,000 of chr7 at only the quality-controlled
+only calculate genotype likelihoods for the region spanning sites 1 to 600,000 of chr7 at only the quality-controlled
 sites that we generated yesterday (if you don't have the sites file a copy is at /ricco/data/tyler/output/qc_sites.pos).
 Note that some options are on by default (e.g. -remove_bads), but we'll specify them to be explicit. We'll also specify some
 commonly-used filters that are redundant with the QC we performed to make the `-sites` file, since they will demonstrate
@@ -94,12 +94,12 @@ how to these things if you want to be more stringent with your total site depth 
 sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters)
 <br>
 The GLs we calculate will use the SAMtools likelihood model `-GL 1` (see `$ANGSD -GL`) and output them as a text file
-that we can easily examine.
+that we can easily examine. This will take ~2.5 minutes.
 
 ```bash
-$ANGSD -b $BAMLIST -ref $CICHREF -r chr7:20000-40000 -sites ~/ngs_intro/output/qc_sites.pos \
+$ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
 -remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
--setMinDepth 40 -setMaxDepth 1000 -doCounts 1 -GL 1 -doGlf 4 -out $DIR/output/calmas_region
+-setMinDepth 40 -setMaxDepth 700 -doCounts 1 -GL 1 -doGlf 4 -out $DIR/output/calmas_region
 ```
 
 The base alignment quality (BAQ) adjustment will recalibrate the base quality scores around INDELS. The `-C` option
@@ -119,10 +119,10 @@ Looking at the standard output what percentage of the sites provided to ANGSD we
 <summary> click here for help </summary>
 
 ```bash
--> Total number of sites analyzed: 18433
--> Number of sites retained after filtering: 15754 
+-> Total number of sites analyzed: 593192
+-> Number of sites retained after filtering: 538150
 ```
-So ~85% of the sites were kept.
+So ~90% of the sites were kept.
 
 </details>
 
@@ -138,7 +138,7 @@ all scaled by the most likely genotype.
 	less -S $DIR/output/calmas_region.glf.gz
 
 We are analyzing 40 individuals, so we should have 402 fields in the glf file. You should confirm this and try to print the likelihoods
-for the individual called CMASS6608007 at the first site (each bam file is named by the individual, i.e. <idividual ID>.bam). What is 
+for the individual called CMASS6608007 at position chr7:1005 (each bam file is named by the individual, i.e. <idividual ID>.bam). What is 
 their most likely genotype? If you need help you can click below.
 
 <details>
@@ -151,17 +151,27 @@ their most likely genotype? If you need help you can click below.
 echo "$(($(zcat $DIR/output/calmas_region.glf.gz | head -n1 | wc -w)-2))"
 
 # You should see that indeed there are 400 likelihood values.
-# figure out what line CMASS6607982 is in the bam list.
+# figure out what line CMASS6608007 is in the bam list.
 
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
 echo "$INDNUM"
 
 # So this individual is at row 25 in the bam list. Now we can extract their likelihoods.
 
-zcat $DIR/output/calmas_region.glf.gz | head -n1 | cut -f 3- | perl -se '$start=($n-1)*10; @arr = split(/\t/,<>); print "@arr[$start .. $start+9]\n"' -- -n=$INDNUM
+zcat $DIR/output/calmas_region.glf.gz | grep -m 1 $'^chr7\t10005\t' | cut -f 3- | perl -se '$start=($n-1)*10; @arr = split(/\t/,<>); print "@arr[$start .. $start+9]\n"' -- -n=$INDNUM
 ```
 Since the likelihoods have been scaled to the most likely and log-transformed, the most likely genotype will
-have a value of 0. For CMASS6608007 the 5th likelihood is zero, corresponding to the genotype 'CC'.
+have a value of 0. For CMASS6608007 the 8th likelihood is zero, corresponding to the genotype 'GG'.
+
+You could confirm this by looking at this site in the bcf file that you generated yesterday.
+
+```bash
+bcftools view -H -s CMASS6608007 -r chr7:10005 ~/ngs_intro/output/calmas_allsites.bcf.gz
+```
+
+Yep, it looks like this site is monomorphic with the reference a 'G' and this individual has data (your output should look like):
+
+	chr7	10005	.	G	.	5018.12	.	DP=173;AD=173;SCR=21;MQSBZ=0.472176;FS=0;MQ0F=0;AN=2;DP4=96,77,0,0;MQ=57;NS=39	GT:DP:AD:SCR:QS	0/0:2:2:0:64
 
 </details>
 
@@ -205,7 +215,7 @@ $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
 -doMajorMinor 1 -doMaf 1 -skipTriallelic 1 -out $DIR/output/calmas_region_af
 ```
 
-Check out the output. The columns are<br>
+Check out the output: `less $DIR/output/calmas_region_af.mafs.gz` The columns are<br>
 (1) chromosome<br>
 (2) position<br>
 (3) major allele<br>
@@ -213,15 +223,14 @@ Check out the output. The columns are<br>
 (5) maximum likelihood estimate of the minor allele frequency<br>
 (6) the number of individuals with data<br>
 
-	less $DIR/output/calmas_region_af.mafs.gz
-
 Here's the first 5 sites:
+
 	chromo	position	major	minor	knownEM	nInd
-	chr7	21603	C	A	0.000001	27
-	chr7	21604	A	T	0.003746	28
-	chr7	21605	C	A	0.000001	28
-	chr7	21606	T	A	0.000001	29
-	chr7	21607	C	A	0.000001	29
+	chr7	115	A	C	0.000002	33
+	chr7	116	A	C	0.000002	33
+	chr7	117	A	C	0.000002	33
+	chr7	118	A	C	0.000003	34
+	chr7	119	G	A	0.000001	35
 
 Now that you know how to extract allele frequencies, one interesting thing we could do is estimate the absolute divergence 
 between the two ecomorphs of Astatotilapia calliptera in your data. Specifcally, we can use the allele frequencies
@@ -240,15 +249,15 @@ the allele frequencies using two different bam lists as input, which is what we'
 ```bash
 # estimate littoral morph allele frequencies (-ref is required for -doMajorMinor 4)
 
-$ANGSD -b $DATDIR/littoral_bams.list -ref $CICHREF -r chr7:20000-40000 -sites ~/ngs_intro/output/qc_sites.pos \
--remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
--GL 1 -doMajorMinor 4 -doMaf 2 -out $DIR/output/calmas_region_af_littoral
+$ANGSD -b $DATDIR/littoral_bams.list -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
+-remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 -skipTriallelic 1 \
+-GL 1 -doMajorMinor 4 -doMaf 1 -out $DIR/output/calmas_region_af_littoral
 
 # estimate benthic morph allele frequencies
 
-$ANGSD -b $DATDIR/benthic_bams.list -ref $CICHREF -r chr7:20000-40000 -sites ~/ngs_intro/output/qc_sites.pos \
--remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
--GL 1 -doMajorMinor 4 -doMaf 2 -out $DIR/output/calmas_region_af_benthic
+$ANGSD -b $DATDIR/benthic_bams.list -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
+-remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 -skipTriallelic 1 \
+-GL 1 -doMajorMinor 4 -doMaf 1 -out $DIR/output/calmas_region_af_benthic
 ```
 Take a look at these new maf files, you'll notice that there is an additional column specifying the reference allele since we included 
 `-ref` in these runs. The major allele should match the ref allele since we used `doMajorMinor 4`.
@@ -288,17 +297,18 @@ If you want to see what the `-sizefile` for the fAstCal1.2 reference genome look
 Now, let's run dxyWindow.
 
 ```bash
-$DATDIR/prog/bin/dxyWindow -winsize 10000 -stepsize 1250 -fixedsite 0 -sizefile $DATDIR/ref/fAstCal1.2_chr_lengths.txt -skip_missing 1 \
+$DATDIR/prog/bin/dxyWindow -winsize 10000 -stepsize 5000 -fixedsite 0 -sizefile $DATDIR/ref/fAstCal1.2_chr_lengths.txt -skip_missing 1 \
 $DIR/output/calmas_region_af_littoral.mafs.gz $DIR/output/calmas_region_af_benthic.mafs.gz > $DIR/output/calmas_ecomorph_dxy.txt
 ``` 
-The global Dxy printed to the screen states that there are on average ~4.38 nucleotide differences in 15,754 sites when comparing
-littoral to benthic individuals. This means that there are approximately only 0.0003 average pairwise differences per site, which 
-is very low and so indicates that these ecomorphs are likely quite genetically similar. This is only based on a small region and 
+The global Dxy printed to the screen states that there are on average ~758 nucleotide differences in 538,384 sites when comparing
+littoral to benthic individuals. This means that there are approximately only 0.0014 pairwise differences on average per site, which 
+is low and so indicates that these ecomorphs are likely quite genetically similar. This is only based on a small region and 
 in practice you'd want to make this inference across the genome. Accordingly, looking at how Dxy is distributed across the genome, 
 i.e. where the ecomorphs appear to be particularly divergent or similar could provide evidence for selection or introgression,
 respectively.
 
-You can see what Dxy looked like in 10 kb windows when sliding along our small example region in increments of 5 kb.
+You can see what Dxy looked like in 10 kb windows when sliding along our small example region in increments of 5 kb. Typically
+it can be useful to visual these sliding window analyses as Manhattan plots.
 
 	cat $DIR/output/calmas_ecomorph_dxy.txt
 
@@ -310,10 +320,36 @@ minor allele frequency (MAF) is zero (the null) to the likelihood of the estimat
 is distributed according to a chi-square(1 d.f.), and so we can calculate a p-value for whether the estimated MAF is statistically 
 different from zero, in which case the site is a SNP.
 <br>
-You can call SNPs based on a particular p-value cutoff using `SNP_pval`, so that's what we'll do.
+You can call SNPs based on a particular p-value cutoff using `SNP_pval`, so that's what we'll do for the first 1 MB on chromosome 7
 
-$ANGSD 
+```bash
+$ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
+-doMajorMinor 1 -doMaf 1 -SNP_pval 1e-6 -skipTriallelic 1 -out $DIR/output/calmas_region_snpcall
+```
+Look at the file `less $DIR/output/calmas_region_snpcall.mafs.gz`, which contains only sites called as variable.
 
+The columns of this maf file are the same as before, except now there is an additional column 'pK-EM', which is the p-value corresponding
+to the likelihood ratio test of whether a given site is variable.
+
+Compare the number of called SNPs and distribution of allele frequencies to the case when you use a less stringent p-value cutoff
+for whether a site is variable. This time we'll use a SNP p-value cutoff of 0.01.
+
+$ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
+-doMajorMinor 1 -doMaf 1 -SNP_pval 0.01 -skipTriallelic 1 -out $DIR/output/calmas_region_snpcall_liberal
+
+Count the number of SNPs in the two maf files of SNPs
+
+``` bash
+# p-value cutoff of 1e-6
+
+echo "$(($(zcat $DIR/output/calmas_region_snpcall.mafs.gz | wc -l)-1))"
+
+# p-value cutoff of 1e-2
+
+echo "$(($(zcat $DIR/output/calmas_region_snpcall_liberal.mafs.gz | wc -l)-1))"
+```
+
+Describe the difference between the two SNP p-value cutoffs.
 
 ## Genotype posteriors and calling	
 
