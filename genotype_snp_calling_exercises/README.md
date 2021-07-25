@@ -397,6 +397,7 @@ You can click below to view what you should have seen
 <summary> snp calling comparison </summary>
 
 `-SNP_pval 1e-6`: 1260 SNPs
+<br>
 `-SNP_pval 1e-2`: 1709 SNPs
 
 ![snp_calling_comparison](./outputs/snp_call_comparison.png)
