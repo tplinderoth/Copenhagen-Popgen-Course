@@ -348,6 +348,60 @@ echo "$(($(zcat $DIR/output/calmas_region_snpcall.mafs.gz | wc -l)-1))"
 
 echo "$(($(zcat $DIR/output/calmas_region_snpcall_liberal.mafs.gz | wc -l)-1))"
 ```
+Plot the MAF distribution
+
+```bash
+$DATDIR/scripts/plotAFDist.R $DIR/output/calmas_region_snpcall.mafs.gz $DIR/output/calmas_region_snpcall_liberal.mafs.gz $DIR/output/snp_call_comparison
+
+# Ignore the warnings about closing the unsed connections.
+
+# View the plot
+
+evince $DIR/output/snp_call_comparison.pdf
+```
+<details>
+
+<summary> Click for plotAFDist.R code </summary>
+
+```bash
+#!/usr/bin/env Rscript
+
+# plotAFDist.R <mafs.gz file 1> <mafz.gz file 2> <output prefix>
+
+library(ggplot2)
+
+# parse arguments
+args <- commandArgs(trailingOnly=TRUE)
+
+maf1 = read.table(gzfile(args[1],'rt'), head=TRUE)
+maf2 = read.table(gzfile(args[2],'rt'), head=TRUE)
+outprefix = args[3]
+
+# combine the data so that allele frequency densities can be plotted together
+maf1$SNP_cutoff <- "1e-6"
+maf2$SNP_cutoff <- "1e-2"
+maf.comb <- rbind(maf1, maf2)
+maf.comb$SNP_cutoff <- factor(maf.comb$SNP_cutoff, levels=c("1e-6","1e-2"), order=TRUE)
+
+# plot
+pdf(file=paste0(outprefix,".pdf"))
+ggplot(maf.comb, aes(knownEM, fill = SNP_cutoff)) + geom_density(alpha = 0.4, bw=0.015) + theme_classic(base_size=16) + theme(axis.line = element_line(size=0.5)) + xlab("MAF") + ylab("Density")
+invisible(dev.off())
+```
+</details>
+
+You can click below to view what you should have seen
+
+<details>
+
+<summary> snp calling comparison </summary>
+
+`-SNP_pval 1e-6`: 1260
+`-SNP_pval 1e-2`: 1709
+
+![snp_calling_comparison](./outputs/snp_call_comparison.pdf)
+
+</details>
 
 Describe the difference between the two SNP p-value cutoffs.
 
