@@ -378,14 +378,14 @@ maf2 = read.table(gzfile(args[2],'rt'), head=TRUE)
 outprefix = args[3]
 
 # combine the data so that allele frequency densities can be plotted together
-maf1$SNP_cutoff <- "1e-6"
-maf2$SNP_cutoff <- "1e-2"
+maf1$SNP_pval <- "1e-6"
+maf2$SNP_pval <- "1e-2"
 maf.comb <- rbind(maf1, maf2)
-maf.comb$SNP_cutoff <- factor(maf.comb$SNP_cutoff, levels=c("1e-6","1e-2"), order=TRUE)
+maf.comb$SNP_pval <- factor(maf.comb$SNP_pval, levels=c("1e-6","1e-2"), order=TRUE)
 
 # plot
 pdf(file=paste0(outprefix,".pdf"))
-ggplot(maf.comb, aes(knownEM, fill = SNP_cutoff)) + geom_density(alpha = 0.4, bw=0.015) + theme_classic(base_size=16) + theme(axis.line = element_line(size=0.5)) + xlab("MAF") + ylab("Density")
+ggplot(maf.comb, aes(knownEM, fill = SNP_pval)) + geom_density(alpha = 0.4, bw=0.015) + theme_classic(base_size=16) + theme(axis.line = element_line(size=0.5)) + xlab("MAF") + ylab("Density")
 invisible(dev.off())
 ```
 </details>
@@ -396,10 +396,10 @@ You can click below to view what you should have seen
 
 <summary> snp calling comparison </summary>
 
-`-SNP_pval 1e-6`: 1260
-`-SNP_pval 1e-2`: 1709
+`-SNP_pval 1e-6`: 1260 SNPs
+`-SNP_pval 1e-2`: 1709 SNPs
 
-![snp_calling_comparison](./outputs/snp_call_comparison.pdf)
+![snp_calling_comparison](./outputs/snp_call_comparison.png)
 
 </details>
 
