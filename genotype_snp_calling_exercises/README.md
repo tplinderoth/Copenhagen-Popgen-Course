@@ -89,9 +89,9 @@ only calculate genotype likelihoods for the region spanning sites 1 to 600,000 o
 sites that we generated yesterday (if you don't have the sites file a copy is at /ricco/data/tyler/output/qc_sites.pos).
 Note that some options are on by default (e.g. -remove_bads), but we'll specify them to be explicit. We'll also specify some
 commonly-used filters that are redundant with the QC we performed to make the `-sites` file, since they will demonstrate
-how to these things if you want to be more stringent with your total site depth for example. Note that `-setMinDepth` and
-`-setMaxDepth` require reads to be counted, i.e. `-doCounts 1`. You should look through each of the arguments used a make 
-sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters)
+how to these things if you want to be more stringent with your total site depth for example. *A sites files is not required 
+to run ANGSD.* Note that `-setMinDepth` and `-setMaxDepth` require reads to be counted, i.e. `-doCounts 1`. You should look 
+through each of the arguments used a make sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters)
 <br>
 The GLs we calculate will use the SAMtools likelihood model `-GL 1` (see `$ANGSD -GL`) and output them as a text file
 that we can easily examine. This will take ~2.5 minutes.
@@ -329,7 +329,9 @@ $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
 Look at the file `less $DIR/output/calmas_region_snpcall.mafs.gz`, which contains only sites called as variable.
 
 The columns of this maf file are the same as before, except now there is an additional column 'pK-EM', which is the p-value corresponding
-to the likelihood ratio test of whether a given site is variable.
+to the likelihood ratio test of whether a given site is variable. One useful option to be aware of when calling SNPs (or working with data 
+involving variable sites in general) is `-minMaf X` (which requires `-doMaf` when used), which filters out any sites with a MAF <**X** from
+the analyses. 
 
 Compare the number of called SNPs and distribution of allele frequencies to the case when you use a less stringent p-value cutoff
 for whether a site is variable. This time we'll use a SNP p-value cutoff of 0.01.
@@ -406,9 +408,147 @@ You can click below to view what you should have seen
 
 Describe the difference between the two SNP p-value cutoffs.
 
-## Genotype posteriors and calling	
+## Genotype posterior probabilities and calling
+
+As you looked at the pileups of the low coverage data yesterday, it might have occured to you that if you had some idea of what
+the allele frequencies were in the population, you would probably have at least a bit more confidence in what the genotype would be.
+For example, if the pileup information for an individual was `6  C,,...  5G/BGB`, you'd think that it would help quite a bit in deciding
+how real that 'C' alternate allele is (since it could very well be an error) if you knew that that allele existed in the population,
+and even better if you knew it's frequency. If you knew the frequency of the allele in the population then you could use a population
+genetic model, e.g. Hardy-Weinberg, to figure out the probability of sampling a heterozygote. This is essentially exactly what ANGSD
+does to call genotypes.
+<br>
+You now know how to estimate genotype likelihoods from the sequencing data, and you also know how to estimate allele frequencies, which
+gives you *prior* knowledge on the probability of sampling a particular allele. Now we have all of the components of Bayes' theorem
+(i.e. genotype likelihoods, and the genotype probabilities given an estimate of the allele frequencies) to calculate genotype posterior
+probabilities. By incorporating prior knowledge of allele frequencies we can increase the accuracy of genotype calling.
+<br>
+So now let's estimate some genotype posterior probilities. To invoke genotype calling you use `-doPost` and `-doGeno`.
+
+	-doPost	0	(Calculate posterior prob 3xgprob)
+		1: Using frequency as prior
+		2: Using uniform prior
+		3: Using SFS as prior (still in development)
+		4: Using reference panel as prior (still in development), requires a site file with chr pos major minor af ac an
+
+	-doGeno	0
+		1: write major and minor
+		2: write the called genotype encoded as -1,0,1,2, -1=not called
+		4: write the called genotype directly: eg AA,AC etc 
+		8: write the posterior probability of all possible genotypes
+		16: write the posterior probability of called genotype
+		32: write the posterior probabilities of the 3 gentypes as binary
+		-> A combination of the above can be choosen by summing the values, EG write 0,1,2 types with majorminor as -doGeno 3
+		-postCutoff=0.333333 (Only genotype to missing if below this threshold)
+		-geno_minDepth=-1	(-1 indicates no cutof)
+		-geno_maxDepth=-1	(-1 indicates no cutof)
+		-geno_minMM=-1.000000	(minimum fraction af major-minor bases)
+		-minInd=0	(only keep sites if you call genotypes from this number of individuals)
+
+		NB When writing the posterior the -postCutoff is not used
+		NB geno_minDepth requires -doCounts
+		NB geno_maxDepth requires -doCounts
+
+We'll calculate genotype posterior probabilities using a HWE prior, `-doPost 1` given the allele frequencies estimated with `-doMaf 1`
+and then output the posterior probabilities for the major/major, major/minor, minor/minor genotypes for each individual with `doGeno 8`.
+We'll limit our analysis to SNP position only (`SNP_pval 1e-6`). Note that while we need to estimate allele frequencies, we already 
+have a file containing them, which we don't need to write again, so we can suppress writing another maf file by making the value to 
+`-doMaf` negative. Note that this version of ANGSD is specifying that we *have* to specify `-GL`, so we'll perform the calling using the
+BAMS as input. We'll use many of the same quality controls as last time.
+
+```bash
+$ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
+-remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
+-GL 1 -doMajorMinor 1 -doMaf -1 -SNP_pval 1e-6 -skipTriallelic 1 -doPost 1 -doGeno 8 -out $DIR/output/calmas_region_genocall
+```
+
+The first two columns of the output are the chromosome and position. The following columns list the the posterior probabilites
+for the major/major, major/minor, and minor/minor for each individual in the same order as they appeared from the top of the bam list.
+
+Take a look at the ouput `less -S $DIR/output/calmas_region_genocall.geno.gz`
+
+We are analyzing 40 individuals, so we should have 122 fields in the geno file. You should confirm this and try to print the genotype posterior
+probabilities for the individual called CMASS6608007 at position chr7:136054. What is the most probable genotype call? You should also ensure 
+that the probabilities sum to 1.
+
+<details>
+
+<summary> click for help extracting genotype posterior probability info </summary>
+
+```bash
+# Count number of columns and subtract 2 (chromosome and position fields) to get the number of posterior probability values
+
+echo "$(($(zcat $DIR/output/calmas_region_genocall.geno.gz | head -n1 | wc -w)-2))"
+
+# You should see that indeed there are 120 posterior probability values.
+# figure out what line CMASS6608007 is in the bam list.
+
+INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
+echo "$INDNUM"
+
+# So this individual is at row 25 in the bam list. Now we can extract their genotype posteriors.
+
+zcat $DIR/output/calmas_region_genocall.geno.gz | grep -m 1 $'^chr7\t136054\t' | cut -f 3- | perl -se '$start=($n-1)*3; @arr = split(/\t/,<>); print "@arr[$start .. $start+2]\n"' -- -n=$INDNUM
+```
+The first genotype configuration has the maximum posterior probability (= 0.994656), so the most probably gentoype is Major/Major.
+
+The genotypes do indeed sum to 1 (0.994656 + 0.005344 + 0 = 1).
+
+</details>
+
+What do you think genotype probabilities of `0.333333   0.333333   0.333333` mean for an individual?
+
+We can also perform hard genotype calling using `-doGeno 2` or `-doGeno 4`, which we'll do now. Let's use `-doGeno 2` which represents 
+called genotypes as the number of minor alleles: 0 = Major/Major, 1=Major/Minor, 2=Minor/Minor, -1 = missinge genotype. The genotype 
+with the maximum posterior probability will be called. Perhaps, however, you also want information on the identify of the major and minor
+allele. Printing argument values can be summed to combine outputs. `-doGeno 1` prints the major and minor alleles, so if we add this value
+of 1 to `-doGeno 2`, we have `-doGeno 3`, which should give us the output we want.
+<br>
+It's often a good idea when hard-calling to specify a minimum posterior probability
+for calling, which is achieved with the `-postCutoff` option. `-postCutoff X` which not call a genotype if the maximum posterior probability
+is < **X**. We'll use a minimum posterior cutoff of 0.90.
+<br>
+So now let's hard-call genotypes.
+
+```bash
+$ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
+-remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
+-GL 1 -doMajorMinor 1 -doMaf -1 -SNP_pval 1e-6 -skipTriallelic 1 -doPost 1 -doGeno 3 -postCutoff 0.90 -out $DIR/output/calmas_region_genocall_hard
+```
+The output now has columns (1) chromosome, (2) position, (3) major allele, (4) minor allele, (5..number_individuals) genotype calls for every
+individual.
+
+Take a look at the ouput `less -S $DIR/output/calmas_region_genocall_hard.geno.gz`
+
+We are analyzing 40 individuals, so we should have 44 fields in the geno file. You should confirm this. What is the genotype call for 
+CMASS6608007 at position chr7:136054?
+
+<details>
+
+<summary> click for help extracting hard-call info </summary>
+
+```bash
+# Count number of columns and subtract 4 (chromosome, position, major allele, minor allele fields) to get the number genotype calls.
+
+echo "$(($(zcat $DIR/output/calmas_region_genocall_hard.geno.gz | head -n1 | wc -w)-4))"
+
+# You should see that indeed there are 40 genotype calls.
+# figure out what line CMASS6608007 is in the bam list.
+
+INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
+echo "$INDNUM"
+
+# So this individual is at row 25 in the bam list. Now we can extract their genotype posteriors.
+
+zcat $DIR/output/calmas_region_genocall_hard.geno.gz | grep -m 1 $'^chr7\t136054\t' | perl -se '@arr = split(/\t/,<>); print "$arr[$n+3]\n"' -- -n=$INDNUM
+```
+The called genotype is '0', meaning that this individuals is most probably 'CC'.
+
+</details>
 
 ## PCA
+
+
 
 ## SFS
 -compare to expected SFS
