@@ -629,7 +629,7 @@ $DATDIR/scripts/plotPCA.R $DIR/output/calmas_common.covar $DATDIR/calmas_meta_su
 evince $DIR/output/calmas_common_pca.pdf
 ```
 
-Click below to view both PCA plots you've just generated along with one run using all SNPs across the genome with MAF >5% (the last plot includes all  
+Click below to view the PCA plots you've just generated along with one run using all SNPs across the genome with MAF >5% (the last plot includes all  
 individuals from the Masoko sex determination study with morph information).
 
 <details>
@@ -637,15 +637,17 @@ individuals from the Masoko sex determination study with morph information).
 <summary> click for PCA plots </summary>
 
 40 individuals chr7:1-60000 all SNPs
+![calmas_region_PCA_allsnps](./outputs/calmas_pca.png)
 
 40 individuals chr7:1-60000 SNPs > 25% MAF
+![calmas_region_PCA_common_variants](./outputs/calmas_common_variants_pca.png)
 
 300 individuals, full genome, SNPs > 5% MAF
+![calmas_genome_pca](./outputs/calmas_pca_all_full_genome.png)
 
 </details>
 
-Describe how treating the data differently is influencing our view of population structure in Lake Masoko. Why do we see 
-such differences?
+What does PC1 appear to be describing in biological terms? How robust is this interpretation to differences in the amount of data used and how it is treated?
 
 ## SFS
 
@@ -775,6 +777,99 @@ evince $DIR/output/calmas_region_folded.pdf
 
 </details>
 
-This SFS looks very strange. Try to compare this SFS to an expected SFS from a neutrally evolving, constant-size
-population. We expect that the number of sites in each frequency category will be proportional to 1/x, where x is
-the number of chromosomes with the derived allele.
+This SFS looks very strange because our example region is quite short and there is high sampling variance with few SNPs. 
+The folded SFS for all of chromsome 7 (below) has been generated for you in the same way, except no quality controls were applied, but 
+still it looks much more sane. Try to compare this observed SFS to the expected SFS from a neutrally evolving, constant-size
+population. We expect that the number of SNPs for which x sampled chromosomes carry a mutation to be proporitional to 1/x. 
+Try to think of how you can compare the observed to the expected SFS, and then you can click below for help.
+<br>
+Folded SFS for all of chromosome 7:
+![chr7_folded_sfs](./outputs/calmas_region_folded_chr7.png)
+
+<details>
+
+<summary> click for SFS comparison </summary>
+
+The following plots were produced using the R code
+
+```bash
+#!/usr/bin/env Rscript
+
+# compare_sfs.R <SFS file> <output prefix> <use folded (0|1)> <plot type: "bar"|"scatter">
+
+# parse inputs
+args <- commandArgs(trailingOnly=TRUE)
+
+obs <- scan(args[1])
+outprefix <- args[2]
+fold <- as.numeric(args[3]) # is the SFS folded (1 = yes, 0 = no)
+plottype <- args[4]
+
+obs <- obs[-1] # remove fixed category
+s = sum(obs) # number segregating sites
+
+nchr = ifelse(fold, 2*length(obs), length(obs)) # number chromosomes
+n = nchr/2
+nlab = ifelse(fold,n,nchr)
+
+# calculate expected unfolded SFS counts
+a = sum(1/1:(nchr-1))
+sfs.expected <- sapply(1:(nchr-1),function(x,segsites,a){segsites/(x*a)}, segsites=s, a=a)
+
+# fold SFS if necessary
+if (fold) {
+        sfs.fold = sapply(1:(n-1),function(x,sfs,nchr){sfs[x]+sfs[nchr-x]},nchr=nchr,sfs=sfs.expected)
+        sfs.fold = c(sfs.fold,sfs.expected[n])
+        sfs.expected = sfs.fold
+}
+
+
+if (plottype == "bar") {
+# plot observed vs expected as a barplot
+        pdf(file=paste0(outprefix,"_barplot.pdf"),width=14,height=7)
+        sfs.mat <- t(as.matrix(data.frame(obs=obs, expected=sfs.expected)))
+        barplot(sfs.mat, beside=TRUE, names=c(1:n), cex.names=0.7, col=rep(c("grey80","grey10"),nlab),xlab="MAF",ylab="Number SNPs", cex.lab=1.2, cex.axis=1.2)
+        legend('topright',c("observed","expected"),fill=c("grey80","grey10"),bty='n',cex=1.2)
+        invisible(dev.off())
+} else if (plottype == "scatter") {
+        # plot expected vs observed scatterplot
+        pdf(file=paste0(outprefix,"_scatter.pdf"))
+        sfs.obs.p <- obs/sum(obs)
+        sfs.e.p <- sfs.expected/sum(sfs.expected)
+        plot(y=-log10(sfs.obs.p), x=-log10(sfs.e.p), ylab="-log10(observed MAF probability)", xlab="-log10(expected MAF probability)", cex.lab=1.2, cex.axis=1.2)
+        abline(0,1,col="red",lty=2)
+        invisible(dev.off())
+} else stop("Unrecognized plot type")
+```
+
+```bash
+# barplot
+$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/chr7_folded_sfs 1 bar
+
+# scatterplot
+$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/chr7_folded_sfs 1 bar
+```
+The following two plots provide essentially the same information and just show different ways of comparing the observed to the expected SFS.
+
+![sfs_barplot_comparison](./outputs/obs_vs_expected_sfs_barplot.png)
+
+![sfs_scatter_comparison](./outputs/obs_vs_expected_sfs_plot.png)
+
+Describe how and why you think the observed SFS differs from the expected SFS.
+
+</details>
+
+Lastly, we can use the global SFS estimate as a prior on the probability of sampling a site belonging to a given allele frequency class.
+The global SFS prior, along with the per site allele frequency likelihoods from `-doSaf` can be used to estimate the posterior
+probability distribution over all of the allele frequencies at particular site. Try it.
+
+```bash
+angsd -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
+-doSaf 1 -pest $DIR/output/calmas_region_folded.sfs -fold 1 -anc $CICHREF -out $DIR/output/calmas_region_folded_post
+```
+Now take a look at the output. It's same format as the *.saf output from before except now instead of likelihoods the values are posterior
+probabilites of allele frequencies in log scale.
+
+```bash
+$DATDIR/prog/bin/realSFS print $DIR/output/calmas_region_folded_post.saf.idx | less -S
+```
