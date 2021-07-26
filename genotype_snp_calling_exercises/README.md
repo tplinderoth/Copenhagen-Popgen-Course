@@ -1,6 +1,22 @@
 Estimation of allele frequencies, SNP calling, and genotype calling from NGS data
 =================================================================================
 
+For these excercises you will use whole genome sequencing data from 40 individuals of *Astatotilapia calliptera* from the crater 
+Lake Masoko in Tanzania. Among these individuals, 20 represent a "littoral" ecomorph and the other 20 a 
+"benthic" ecomorph. These individuals have been sequenced to a median coverage of 5.7x. See `/ricco/data/tyler/calmas_meta_sub.txt` for 
+metadata on these samples.
+<br>
+![masoko_calliptera_ecomorphs](../images/masoko_calliptera_ecomorphs.png)
+<br>
+The goals will be to<br>
+* Estimate genotype likelihoods and posterior probabilities
+* Call genotypes
+* Estimate allele frequencies and allele frequency posterior probabilities
+* Call SNPs
+* Estimate the site frequency spectrum
+* Perform a Principle Component Analysis among individuals without calling genotypes
+* Perform a Dxy analysis of ecomorph differentiation
+
 Make directories and set environmental variables for this session
 
 ```bash
@@ -19,8 +35,18 @@ BAMDIR=$DATDIR/bams
 SCRIPTS=$DATDIR/scripts
 ANGSD=/ricco/data/tyler/prog/bin/angsd
 ```
+If you did not yet complete the 'INTRODUCTION TO NGS DATA' excercises you'll need to copy over the quality controlled list of sites,
+which I provide a copy of (skip the following step if you completed the bcftools filtering):
 
-Today will be performing the first steps of most any NGS data analysis with [ANGSD](http://www.popgen.dk/angsd/index.php/ANGSD)
+```bash
+cp /ricco/data/tyler/output/qc_sites.pos $DIR/output/
+
+# index the sites file
+ $ANGSD sites index $DIR/output/qc_sites.pos
+```
+
+We will perform most analyses with the program [ANGSD](http://www.popgen.dk/angsd/index.php/ANGSD) which is particularly
+good for working with low-medium coverage NGS data.
 
 ANGSD overview
 
@@ -336,8 +362,10 @@ the analyses.
 Compare the number of called SNPs and distribution of allele frequencies to the case when you use a less stringent p-value cutoff
 for whether a site is variable. This time we'll use a SNP p-value cutoff of 0.01.
 
+```bash
 $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
 -doMajorMinor 1 -doMaf 1 -SNP_pval 0.01 -skipTriallelic 1 -out $DIR/output/calmas_region_snpcall_liberal
+```
 
 Count the number of SNPs in the two maf files of SNPs
 
@@ -675,7 +703,10 @@ ancetral state FASTA in conjunction with specifying `-fold 1`
 angsd -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
 -doSaf 1 -fold 1 -anc $CICHREF -out $DIR/output/calmas_region_folded
 
-# note: angsd v. 0.935 has a folding issue here, so we'll use angsd 0.921 at this step
+# note: angsd v. 0.935 restricts folding to the -realSFS step and outputs 2n+1 counts
+# with the final n being zero. We'll use a previous version (0.921)
+# installed on the server which actually outputs only n+1 values. Just noting this
+# so that you're aware tht calling 'angsd' instead of '$ANGSD' is not an error
 ```
 This produces 3 files: a binary *.saf file which contains the log-scaled allele frequency likelihoods at all sites, it's associated *.saf.idx index file,
 and a binary *.pos file containing which sites are contained in the .saf file. You can have a look at the allele frequency likelihoods using 

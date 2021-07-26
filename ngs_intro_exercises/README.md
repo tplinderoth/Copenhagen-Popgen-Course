@@ -1,6 +1,26 @@
 INTRODUCTION TO NGS DATA EXERCISES
 ==================================
 
+For these exercises we will use exome capture data from the Peruvian mimic poison dart frog, *Ranitomeya imitator*, which were 
+sequenced to an average depth of 14x. The poison frog NGS data we mapped to a *de novo* exome assembly.
+<br>
+[imitator_morphs](../images/imitator.png)
+<br>
+We will also use whole genome sequencing data from the African cichlid fish *Astatotilapia callipeta*, which were sequenced to
+a median depth of 5.7x. The cichlid NGS data were mapped to a chromosome-level *A. calliptera* assembly.
+<br>
+[calliptera](../images/calliptera.png)
+<br>
+The goals for today are to:
+* Become familiar with FASTQ format and know how to check the quality of raw sequencing reads
+* Learn how to perform basic data quality control on sequencing reads
+* Map sequencing reads to a reference genome
+* Become familiar with SAM/BAM and pileup formats for mapped reads
+* Learn how to use IGV to interactively explore mapping information
+* Generate sequencing depth profiles
+* Become familiar with VCF format and BCFtools
+* Perform site-level quality control
+
 Set some environmental variables
 	
 	# set up directories
@@ -48,17 +68,25 @@ Perhaps we have some adapter contamination to worry about so we can check this o
 	# visualize the extent of adapter contamination (this can take a moment to show up, be patient...)
 	eog "$DIR/output/CH1401_R2_fastqc/Images/adapter_content.png"
 
+<details>
+
+<summary> click here if you have trouble opening the fastqc image </summary>
+
+![adapter_contamination](./outputs/CH1401_R2_preclean_adapter_content.png)
+
+</details>
+
 Can you see what FastQC is picking up on? How is the contamination distributed along the reads?
 
 ## Clean fastq files
 
 We'll see if we can clean up the adapter contamination and low quality at the ends of the reads using [cutadapt](https://cutadapt.readthedocs.io/en/stable/). Normally for paired-end
 data, you'd run in paired-end mode so that read pairs are maintained. Single-end mode can be run on the forward and reverse reads separately if it's desirable to retain unpaired reads 
-(after one mate is removed due to quality issues). We'll run on just the reverse read that we examined for sake of time. Cutadapt performs partial sums low-quality trimming. You can
-check out the [algorithm](https://cutadapt.readthedocs.io/en/stable/algorithms.html#quality-trimming-algorithm)) to see how it works. We'll use a quality cutoff of `-q 15` and specify 
+(after one mate is removed due to quality issues). Cutadapt performs partial sums low-quality trimming. You can check out 
+the [algorithm](https://cutadapt.readthedocs.io/en/stable/algorithms.html#quality-trimming-algorithm) to see how it works. We'll use a quality cutoff of `-q 15` and specify 
 Illumina TruSeq [adapters](https://support.illumina.com/bulletins/2016/12/what-sequences-do-i-use-for-adapter-trimming.html), which is what were used for the frog sequencing.
 
-	# paired-end mode
+	# RUN THIS ONE # paired-end mode #
 	cutadapt -q 15 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minimum-length 36 \
         -o "$DIR/output/CH1401_R1_clean.fastq.gz" -p "$DIR/output/CH1401_R2_clean.fastq.gz" \
 	"$DATDIR/fastq/CH1401_R1.fastq" "$DATDIR/fastq/CH1401_R2.fastq"
@@ -80,7 +108,7 @@ We can see that cutadapt did a good job of cleaning up the data:
 
 ![fastq_postclean_example](./outputs/CH1401_R2_after.png)
 <br>
-
+	
 Note that the warning for the read length distribution is not of concern in this case. It's only alerting you that there are some short reads now, which we expect based on how we trimmed.
 
 ## Mapping
@@ -318,10 +346,10 @@ that you've seen in IGV and depth profiling?
 <details>
 
 <summary> Click here for answer </summary>
-Tandem duplication on chr7:18,079,155-18,100,834 encompassing the gsdf gene. in a duplicated stat this gene masculanizes fish and so operates as a sex determiner. <br>
-~1x relative depth = non-duplicated <br>
-~1.5x = heterozygous for duplication <br>
-~2x = homozygous for duplication
+There is a tandem duplication on chr7:18,079,155-18,100,834 encompassing the *gsdf* gene. The tandem-duplicate allele masculinizes fish and so operates as a sex determiner. <br>
+~1x relative depth = Homozygous for the non-duplicated *gsdf* allele (2 *gsdf* copies)<br>
+~1.5x relative depth = Heterozygous for the duplication allele (3 *gsdf* copies)<br>
+~2x = Homozygous for the duplication allele (4 *gsdf* copies)
 
 </details>
 
@@ -402,6 +430,43 @@ hist(df$POS_BIAS, breaks=20, ylab="Number sites", xlab="tail distance bias p-val
 hist(df$EXCHET, breaks=20, ylab="Number sites", xlab="Excess heterozygosity p-value", main="ExcHet", cex.lab=1.2)
 invisible(dev.off())
 ```
+
+</details>
+<br>
+<details>
+
+<summary> click here to see quality statistic percentiles and plots </summary>
+
+	Percentiles
+	
+	                    0.1%           1%          10%          20%          30%
+	DP          1.000000e+00 1.200000e+01 1.060000e+02 1.570000e+02 1.780000e+02
+	MQ          1.300000e+01 2.200000e+01 3.500000e+01 4.300000e+01 5.400000e+01
+	STRAND_BIAS 4.761011e-07 1.219852e-02 3.061478e-01 4.393060e-01 4.701490e-01
+	BASEQ_BIAS  5.224217e-31 6.404809e-21 1.103558e-12 3.795092e-10 1.480062e-08
+	MQ_BIAS     0.000000e+00 2.802600e-45 1.185121e-01 1.000000e+00 1.000000e+00
+	POS_BIAS    1.145862e-04 2.673683e-03 3.093082e-02 1.212964e-01 2.907322e-01
+	EXCHET      1.022730e-11 5.025090e-06 2.091916e-01 4.348290e-01 5.858350e-01
+	                    40%         50%          60%         70%          80%
+	DP          1.90000e+02 2.00000e+02 2.090000e+02 2.19000e+02 2.300000e+02
+	MQ          5.90000e+01 6.00000e+01 6.000000e+01 6.00000e+01 6.000000e+01
+	STRAND_BIAS 4.91736e-01 7.68149e-01 1.000000e+00 1.00000e+00 1.000000e+00
+	BASEQ_BIAS  2.56738e-07 2.99443e-06 3.206144e-05 3.75725e-04 9.199838e-03
+	MQ_BIAS     1.00000e+00 1.00000e+00 1.000000e+00 1.00000e+00 1.000000e+00
+	POS_BIAS    1.00000e+00 1.00000e+00 1.000000e+00 1.00000e+00 1.000000e+00
+	EXCHET      7.00602e-01 7.97872e-01 8.622170e-01 9.16105e-01 9.589040e-01
+	                   90% 99%   99.9%
+	DP          246.000000 461 954.804
+	MQ           60.000000  60  60.000
+	STRAND_BIAS   1.000000   1   1.000
+	BASEQ_BIAS    0.254081   1   1.000
+	MQ_BIAS       1.000000   1   1.000
+	POS_BIAS      1.000000   1   1.000
+	EXCHET        0.987342   1   1.000
+
+![quality_stat_distribution_1](./outputs/allsites_stat_plot_1.png)
+<br>
+![quality_stat_distribution_2](./outputs/allsites_stat_plot_2.png)
 
 </details>
 
