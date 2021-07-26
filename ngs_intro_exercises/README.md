@@ -18,19 +18,23 @@ Set some environmental variables
 	BCFTOOLS=$DATDIR/prog/bin/bcftools
 	ANGSD=/ricco/data/tyler/prog/bin/angsd
 
-## fastq
+## fastq file format and quality
+
+The first data we will take a look at is from exome capture data on poison dart frogs. These frogs 
+have massive genomes and so WGS was not a practical approach for population genetics and gene mapping.
 
 Have a look inside one of the frog fastq files
 
 	less "$DATDIR/fastq/CH1401_R1.fastq"
 
-visualize data with [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/). You can get some help info with `fastqc --help`
-Will automatically detect file format type, but can specify with `-f`.
+visualize the data with [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/). You can get some help information with `fastqc --help`.
+FastQC will automatically detect file format type, but you can also specify it with `-f`.
 
 	fastqc -outdir "$DIR/output/" $DATDIR/fastq/*.fastq
 	ll "$DIR/output/"
 
-You can scp the html files onto your local machine and view them in the web. It would look something like:
+You can scp the *.html files onto your local machine and view them in a browser. Here's an example of what the top of the web page would look like 
+for the CH1401_R2.fastq file:
 
 ![fastq_preclean_example](./outputs/CH1401_R2_before.png)
 
@@ -44,14 +48,15 @@ Perhaps we have some adapter contamination to worry about so we can check this o
 	# visualize the extent of adapter contamination (this can take a moment to show up, be patient...)
 	eog "$DIR/output/CH1401_R2_fastqc/Images/adapter_content.png"
 
-Can you see what fastq is picking up on? How is the contamination distributed along the read?
+Can you see what FastQC is picking up on? How is the contamination distributed along the reads?
 
-## clean fastq
+## Clean fastq files
 
-We'll see if we can clean up the adapter contamination and low quality at the ends of the read using cutadapt. Normally run in paired-end mode so that
-read pairs are retained. Single-end mode can be run on the forward and reverse reads separately if it's desirable to retain unpaired reads. We'll run on
-just the reverse read that we examined for sake of time. Partial sums low-quality trimming using -q 15 (algorithm: https://cutadapt.readthedocs.io/en/stable/algorithms.html#quality-trimming-algorithm)
-Specifing Illumina TruSeq [adapters](https://support.illumina.com/bulletins/2016/12/what-sequences-do-i-use-for-adapter-trimming.html).
+We'll see if we can clean up the adapter contamination and low quality at the ends of the reads using [cutadapt](https://cutadapt.readthedocs.io/en/stable/). Normally for paired-end
+data, you'd run in paired-end mode so that read pairs are maintained. Single-end mode can be run on the forward and reverse reads separately if it's desirable to retain unpaired reads 
+(after one mate is removed due to quality issues). We'll run on just the reverse read that we examined for sake of time. Cutadapt performs partial sums low-quality trimming. You can
+check out the [algorithm](https://cutadapt.readthedocs.io/en/stable/algorithms.html#quality-trimming-algorithm)) to see how it works. We'll use a quality cutoff of `-q 15` and specify 
+Illumina TruSeq [adapters](https://support.illumina.com/bulletins/2016/12/what-sequences-do-i-use-for-adapter-trimming.html), which is what were used for the frog sequencing.
 
 	# paired-end mode
 	cutadapt -q 15 -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCA -A AGATCGGAAGAGCGTCGTGTAGGGAAAGAGTGT --minimum-length 36 \
@@ -67,13 +72,16 @@ Specifing Illumina TruSeq [adapters](https://support.illumina.com/bulletins/2016
 	#-o "$DIR/output/CH1401_R2_clean.fastq.gz" "$DATDIR/fastq/CH1401_R2.fastq"
 
 
-use fastqc to check what the data quality looks like for CH1401_R2.fasq after trimming
+use FastQC to check what the data quality looks like for CH1401_R2.fasq after trimming
 
 	fastqc -outdir "$DIR/output/" "$DIR/output/CH1401_R2_clean.fastq.gz"
 
-We can see that cutadapt did a good job of cleaning up the data
+We can see that cutadapt did a good job of cleaning up the data:
 
 ![fastq_postclean_example](./outputs/CH1401_R2_after.png)
+<br>
+
+Note that the warning for the read length distribution is not of concern in this case. It's only alerting you that there are some short reads now, which we expect based on how we trimmed.
 
 ## Mapping
 
@@ -112,7 +120,7 @@ The first 5 reads should look like:
 A useful resource for interpreting the bitwise flags is [here](https://broadinstitute.github.io/picard/explain-flags.html). What do they tell you about the mapping
 of these first five reads?
 
-Now, we are going to switch over to some WGS cihlid data and you'll see it's basically the same, but mapping to a more complete reference
+Now, we are going to switch over to some WGS cichlid fish data and you'll see it's basically the same, but mapping to a more complete reference
 will allow us to make some interesting inferences as you will see...
 
 	# note the header won't show up because we omit -h
@@ -133,7 +141,7 @@ For example, to see all reads that map to chr7:1000-1010 you'd use
 samtools view $DATDIR/bams/CMASS6169443.bam chr7:1000-1010 | less -S
 ``` 
 
-## samtools mpileup
+## SAMtools mpileup
 
 Lets looks at the mapped data on chr7:10,000-10,015
 
@@ -189,17 +197,18 @@ A useful way to visualize mapping information is with the Integrative Genomics V
 	# start up igv
 	$IGV
 
-	# SKIP THE FOLLOWING
+	# SKIP THE FOLLOWING (it's already been done for you)
 	# load reference genome
-	# In top menu: 'Genomes' -> 'Load Genome from File...' and select XXX/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa
+	# In top menu: 'Genomes' -> 'Load Genome from File...' and select /ricco/data/tyer/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa
 	# load BAM
-	# In top menu: 'File' -> 'Load from File...' select XXX/CMASS6607991.bam
+	# In top menu: 'File' -> 'Load from File...' select /ricco/data/tyler/bams/CMASS6607991.bam
 	
-
-	# 'File -> Open session... -> /ricco/data/tyler/igv_sessions/CMASS6607991.xml' 
+	# START HERE
+	# 'File -> Open session... -> '+ Other locations/Computer/ricco/data/tyler/igv_sessions/CMASS6607991.xml' 
 	# In the box next to 'Go' type 'chr7:18,078,500-18,102,000' and press 'Go'
 	# Right-click on the track containing the reads in the IGV window and select 'view as pairs' and 'Group alignment by' -> 'pair orientation'
-	# click on one of the green reads and figure out where its mate maps
+	# click on one of the green reads and figure out where its mate maps. What orientation are these reads mapping in?
+	# You can use the scroll bar along the top to explore more mapping along chr7.
 
 <details>
 
@@ -309,7 +318,7 @@ that you've seen in IGV and depth profiling?
 <details>
 
 <summary> Click here for answer </summary>
-Tandem duplication of gsdf gene, which generates males. <br>
+Tandem duplication on chr7:18,079,155-18,100,834 encompassing the gsdf gene. in a duplicated stat this gene masculanizes fish and so operates as a sex determiner. <br>
 ~1x relative depth = non-duplicated <br>
 ~1.5x = heterozygous for duplication <br>
 ~2x = homozygous for duplication
@@ -328,7 +337,7 @@ $BCFTOOLS mpileup -f $CICHREF -b $BAMLIST \
 | $BCFTOOLS call --ploidy 2 -a PV4,GQ,GP -m -P 0.001 -O u | $BCFTOOLS +fill-tags -O b -o $DIR/output/calmas_allsites.bcf.gz -- -t'AF,NS,ExcHet'
 
 # index the bcf for rapid access to specific regions with 'bcftools view -r ...'
-# not necessary but demonstrating how this is done
+# not necessary now, but demonstrating how this is done
 
 bcftools index $DIR/output/calmas_allsites.bcf.gz
 ```
@@ -351,6 +360,8 @@ $SCRIPTS/plotStatDist.R $DIR/output/allsites_stats.txt $DIR/output/allsites_stat
 
 evince $DIR/output/allsites_stats_plot.pdf
 ```
+
+What are these different quantities measuring? The info can be found in the VCF header.
 
 <details>
 
@@ -410,6 +421,7 @@ less $DIR/output/qc_sites.pos
 $ANGSD sites index $DIR/output/qc_sites.pos
 ```
 
+Can you describe what each of the filters was doing?
 What pecentage of site was removed (discounting those with entirely missing data)?
 
 <details>
