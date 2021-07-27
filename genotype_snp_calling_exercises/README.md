@@ -41,10 +41,13 @@ If you did not yet complete the 'INTRODUCTION TO NGS DATA' excercises you'll nee
 which I provide a copy of (skip the following step if you completed the bcftools filtering):
 
 ```bash
-cp /ricco/data/tyler/output/qc_sites.pos $DIR/output/
+# ONLY IF you don't aleady have the directory ~/ngs_intro/output then make it
+# mkdir ~/ngs_intro/output
+
+cp /ricco/data/tyler/output/qc_sites.pos ~/ngs_intro/output/
 
 # index the sites file
- $ANGSD sites index $DIR/output/qc_sites.pos
+ $ANGSD sites index ~/ngs_intro/output/qc_sites.pos
 ```
 
 We will perform most analyses with the program [ANGSD](http://www.popgen.dk/angsd/index.php/ANGSD) which is particularly
