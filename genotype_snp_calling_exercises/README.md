@@ -110,7 +110,8 @@ Examples for region specification:
 ```
 </details>
 
-<br>
+## Genotype likelihoods
+
 Now lets calculate the genotype likelihoods. ANGSD provides the option to run it's analyses over a region
 (see `$ANGSD -bam` for region specifications) and/or a subset of sites with `sites`. So, let's say we want to
 only calculate genotype likelihoods for the region spanning sites 1 to 600,000 of chr7 at only the quality-controlled
@@ -203,7 +204,7 @@ Yep, it looks like this site is monomorphic with the reference a 'G' and this in
 
 </details>
 
-## allele frequency estimation
+## Allele frequency estimation
 
 Now will estimate allele frequencies using the GLs we just calculated as input. Note that you can use the bams as input again,
 but you'd have to recalculate the likelihoods (with `-GL` as before), which is redundant. If we do supply GLs as input we also
@@ -260,15 +261,17 @@ Here's the first 5 sites:
 	chr7	118	A	C	0.000003	34
 	chr7	119	G	A	0.000001	35
 
+## Dxy
+
 Now that you know how to extract allele frequencies, one interesting thing we could do is estimate the absolute divergence 
-between the two ecomorphs of Astatotilapia calliptera in your data. Specifcally, we can use the allele frequencies
+between the two ecomorphs of *Astatotilapia calliptera* in your data. Specifcally, we can use the allele frequencies
 in the respective ecomorphs to calculate Dxy, which is the average number of pairwise nucleotide differences between them.
 It's important for this calculation that for each site we estimate the allele frequency for the *same* allele in both ecomorphs.
 In order to do this we can set which allele is the major allele using `-doMajorMinor 4`, which will assume that the reference allele
 is major (which may not be true, but that's okay because we are just wanting to differentiate between alleles). Then for a biallelic 
 site, the "minor" (or other) allele will be the same in both ecomorphs. Note that the minor allele is inferred from the GLs. We need 
 to do this because the *actual* major, i.e. the most frequent allele, in the ecomorphs could be different. So, let's get started...
-<br>
+<br><br>
 We need a maf file for each ecomorph, so let's start by generating this for the littoral morphs. We could simply split the glf file
 containing all individuals into a file with only littoral GLs and another with only benthic GLs. Alternatively, we can calculate
 the allele frequencies using two different bam lists as input, which is what we'll do here. The bam list for littoral individuals is
@@ -340,7 +343,7 @@ it can be useful to visual these sliding window analyses as Manhattan plots.
 
 	cat $DIR/output/calmas_ecomorph_dxy.txt
 
-## call SNPs
+## Call SNPs
 
 At this point you're probably all amped up to actually call SNPs right? You're in luck because that's exactly what we're going to do.
 You can statistically test for whether a site is variable in ANGSD using a likelihood ratio (LR) test, which compares the likelihood that the 
@@ -682,7 +685,7 @@ individuals from the Masoko sex determination study with morph information).
 
 What does PC1 appear to be describing in biological terms? How robust is this interpretation to differences in the amount of data used and how it is treated?
 
-## SFS
+## Site frequency spectrum
 
 We will now learn how to estimate the site frequency spectrum (SFS), which is a very useful summary of the distribution of 
 allele frequencies in a population sample. The SFS can be informative about data quality, population demography, and selection.
