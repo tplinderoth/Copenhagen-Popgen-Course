@@ -10,7 +10,7 @@ sequenced to an average depth of 14x. The poison frog NGS data we mapped to a *d
 <br>
 We will also use whole genome sequencing data from the African cichlid fish *Astatotilapia callipeta*, which were sequenced to
 a median depth of 5.7x. The cichlid NGS data were mapped to a chromosome-level *A. calliptera* assembly.
-<br>
+<br><br>
 
 <img src="https://github.com/tplinderoth/Copenhagen-Popgen-Course/blob/main/images/calliptera.png" width="50%">
 
