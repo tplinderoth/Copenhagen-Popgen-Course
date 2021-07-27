@@ -12,8 +12,8 @@ We will also use whole genome sequencing data from the African cichlid fish *Ast
 a median depth of 5.7x. The cichlid NGS data were mapped to a chromosome-level *A. calliptera* assembly.
 <br>
 
-![calliptera](../images/calliptera.png)
-
+%![calliptera](../images/calliptera.png)
+<img src="https://github.com/tplinderoth/Copenhagen-Popgen-Course/blob/main/images/calliptera.png" width="50%">
 
 The goals for today are to:
 * Become familiar with FASTQ format and know how to check the quality of raw sequencing reads
