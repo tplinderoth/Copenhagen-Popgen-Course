@@ -4,13 +4,17 @@ INTRODUCTION TO NGS DATA EXERCISES
 For these exercises we will use exome capture data from the Peruvian mimic poison dart frog, *Ranitomeya imitator*, which were 
 sequenced to an average depth of 14x. The poison frog NGS data we mapped to a *de novo* exome assembly.
 <br>
+
 [imitator_morphs](../images/imitator.png)
+
 <br>
 We will also use whole genome sequencing data from the African cichlid fish *Astatotilapia callipeta*, which were sequenced to
 a median depth of 5.7x. The cichlid NGS data were mapped to a chromosome-level *A. calliptera* assembly.
 <br>
+
 [calliptera](../images/calliptera.png)
-<br>
+
+
 The goals for today are to:
 * Become familiar with FASTQ format and know how to check the quality of raw sequencing reads
 * Learn how to perform basic data quality control on sequencing reads

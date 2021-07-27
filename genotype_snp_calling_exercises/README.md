@@ -6,8 +6,10 @@ Lake Masoko in Tanzania. Among these individuals, 20 represent a "littoral" ecom
 "benthic" ecomorph. These individuals have been sequenced to a median coverage of 5.7x. See `/ricco/data/tyler/calmas_meta_sub.txt` for 
 metadata on these samples.
 <br>
+
 ![masoko_calliptera_ecomorphs](../images/masoko_calliptera_ecomorphs.png)
-<br>
+
+
 The goals will be to<br>
 * Estimate genotype likelihoods and posterior probabilities
 * Call genotypes
