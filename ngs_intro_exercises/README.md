@@ -8,7 +8,7 @@ sequenced to an average depth of 14x. The poison frog NGS data we mapped to a *d
 ![imitator_morphs](../images/imitator.png)
 
 <br>
-We will also use whole genome sequencing data from the African cichlid fish *Astatotilapia callipeta*, which were sequenced to
+We will also use whole genome sequencing data from the African cichlid fish *Astatotilapia calliptera*, which were sequenced to
 a median depth of 5.7x. The cichlid NGS data were mapped to a chromosome-level *A. calliptera* assembly.
 <br><br>
 
@@ -27,8 +27,7 @@ The goals for today are to:
 Set some environmental variables
 	
 	# set up directories
-	mkdir ~/ngs_intro
-	mkdir ~/ngs_intro/output
+	mkdir ~/ngs_intro && mkdir ~/ngs_intro/output
 
 	# set environment variables
 	DIR=~/ngs_intro
@@ -509,3 +508,11 @@ Therefore, we removed 95160 sites, which represents ~10% of the sites with data.
 </details>
 
 You could bypass dumping the initial VCF entirely using one large string of pipes. Give it a try.
+
+ngsParalog Bonus
+
+```bash
+bcftools query -f '%CHROM\t%POS\n' -i 'TYPE="snp" & ALT !~ ","' $DATDIR/vcf/calmas_allsites_17000000_19000000.bcf.gz > $DIR/output/calmas_raw_17000000_19000000_snps.pos
+
+samtools mpileup -b $BAMLIST -A -d 10000 -q 0 -Q 0 --ff UNMAP,DUP -l $DIR/output/calmas_raw_17000000_19000000_snps.pos -r chr7:17000000-19000000 | $DATDIR/prog/ngsParalog/ngsParalog calcLR -infile - -minQ 20 -minind 20 > $DIR/output/multimap_lr.txt
+```
