@@ -708,13 +708,8 @@ a HWE relationship between genotype and allele frequencies. For other `-doSaf` m
 ancetral state FASTA in conjunction with specifying `-fold 1`
 
 ```bash
-angsd -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
--doSaf 1 -fold 1 -anc $CICHREF -out $DIR/output/calmas_region_folded
-
-# note: angsd v. 0.935 restricts folding to the -realSFS step and outputs 2n+1 counts
-# with the final n being zero. We'll use a previous version (0.921)
-# installed on the server which actually outputs only n+1 values. Just noting this
-# so that you're aware tht calling 'angsd' instead of '$ANGSD' is not an error
+$ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
+-doSaf 1 -anc $CICHREF -out $DIR/output/calmas_region_folded
 ```
 This produces 3 files: a binary *.saf file which contains the log-scaled allele frequency likelihoods at all sites, it's associated *.saf.idx index file,
 and a binary *.pos file containing which sites are contained in the .saf file. You can have a look at the allele frequency likelihoods using 
@@ -769,7 +764,7 @@ that you suspect may have experienced a selective sweep for example. Here we'll 
 estimate the global, "genome-wide" SFS.
 
 ```bash
-$DATDIR/prog/bin/realSFS $DIR/output/calmas_region_folded.saf.idx > $DIR/output/calmas_region_folded.sfs
+$DATDIR/prog/bin/realSFS -fold 1 $DIR/output/calmas_region_folded.saf.idx > $DIR/output/calmas_region_folded.sfs
 ```
 The output is a text file of the expected counts of sites in each minor allele frequency class 0, 1/2N, ..., N-1/N, N:
 
@@ -795,12 +790,13 @@ args <- commandArgs(trailingOnly=TRUE)
 
 sfs <- scan(args[1])
 outprefix <- args[2]
+n <- (length(sfs)-1)/2
 
-sfs = sfs[-1] # remove fixed category
+sfs = sfs[2:(n+1)] # restrict to folded categories and remove fixed class
 
 # plot
 pdf(file=paste0(outprefix,".pdf"),width=14,height=7)
-barplot(sfs, xlab="MAF", ylab="Number SNPs", names=1:length(sfs), cex.names=0.8, cex.axis=1.2, cex.lab=1.2)
+barplot(sfs, xlab="MAF", ylab="Number SNPs", names=1:n, cex.names=0.8, cex.axis=1.2, cex.lab=1.2)
 invisible(dev.off())
 ```
 
@@ -838,6 +834,7 @@ The following plots were produced using the R code
 #!/usr/bin/env Rscript
 
 # compare_sfs.R <SFS file> <output prefix> <use folded (0|1)> <plot type: "bar"|"scatter">
+# Note this script uses old ANGSD SFS folding format (N+1 entries)
 
 # parse inputs
 args <- commandArgs(trailingOnly=TRUE)
@@ -889,7 +886,7 @@ if (plottype == "bar") {
 $DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/chr7_folded_sfs 1 bar
 
 # scatterplot
-$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/chr7_folded_sfs 1 bar
+$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/chr7_folded_sfs 1 scatter
 ```
 The following two plots provide essentially the same information and just show different ways of comparing the observed to the expected SFS.
 
@@ -906,8 +903,7 @@ The global SFS prior, along with the per site allele frequency likelihoods from 
 probability distribution over all of the allele frequencies at particular site. Try it.
 
 ```bash
-angsd -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
--doSaf 1 -pest $DIR/output/calmas_region_folded.sfs -fold 1 -anc $CICHREF -out $DIR/output/calmas_region_folded_post
+$ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai -doSaf 1 -pest $DIR/output/calmas_region_folded.sfs -anc $CICHREF -out $DIR/output/calmas_region_folded_post
 ```
 Now take a look at the output. It's same format as the *.saf output from before except now instead of likelihoods the values are posterior
 probabilites of allele frequencies in log scale.
