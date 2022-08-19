@@ -883,10 +883,10 @@ if (plottype == "bar") {
 
 ```bash
 # barplot
-$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/chr7_folded_sfs 1 bar
+$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/output/chr7_folded_sfs 1 bar
 
 # scatterplot
-$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/chr7_folded_sfs 1 scatter
+$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/output/chr7_folded_sfs 1 scatter
 ```
 The following two plots provide essentially the same information and just show different ways of comparing the observed to the expected SFS.
 
