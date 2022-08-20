@@ -8,8 +8,9 @@ The average sequencing depth of samples in this dataset is 14x.
 ![imitator_morphs](../images/imitator.png)
 
 <br>
+
 We will also use whole genome sequencing data from the African cichlid fish *Astatotilapia calliptera* mapped to a chromosome-level *A. calliptera* assembly. 
-These samples were sequenced to an average depth of 5.7x. _this is a test_
+These samples were sequenced to an average depth of 5.7x. *This is a test*.
 
 <br><br>
 
