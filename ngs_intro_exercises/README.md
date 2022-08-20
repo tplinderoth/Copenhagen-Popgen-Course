@@ -285,37 +285,48 @@ The Integrative Genomics Viewer (IGV) provies a useful way to visualize mapping 
 
 ![bam_igv_region](./outputs/cichlid_igv_region.png)
 
-Which sample's reads map properly and who's do not?
+</details>
+
+Now we'll compare mapping for the sample you just looked at to another one.
 
 <details>
 
-<summary> Click here for answer </summary>
+<summary> Click here for image </summary>
 
-CMASS6607991: improper
-CMASS6169461: proper
+![igv_region_comparison](./outputs/cichlid_comparison_igv_region.png)
 
 </details>
 
-From the read orientations you can see that CMASS6607991 has improperly mapped re
+Can you tell which one has improperly mapped reads?
+
+<details>
+
+<Answer>
+
+CMASS6607991 (top): improper
+CMASS6169461 (bottom): proper
 
 </details>
 
 <br> <br>
 
-## coverage plot
-
 ![igv_region_comparison](./outputs/cichlid_comparison_igv_region.png)
+
+## coverage plot
 
 Let's check the coverage spanning the region where reads were mapping in the RL orientation +/- ~20 kb. Do this for a subset of samples
 showing different mapping patterns (4 strange, 2 normal).
 
 ``` bash
-BAM1=$BAMDIR/CMASS6608026.bam # improper mapping
-BAM2=$BAMDIR/CMASS6607991.bam # improper mapping
-BAM3=$BAMDIR/CMASS6389722.bam # improper mapping
-BAM4=$BAMDIR/CMASS6169445.bam # improper mapping
-BAM5=$BAMDIR/CMASS6169461.bam # proper mapping
-BAM6=$BAMDIR/CMASS6169443.bam # proper mapping
+# improper mapping
+BAM1=$BAMDIR/CMASS6608026.bam
+BAM2=$BAMDIR/CMASS6607991.bam
+BAM3=$BAMDIR/CMASS6389722.bam
+BAM4=$BAMDIR/CMASS6169445.bam
+
+# proper mapping
+BAM5=$BAMDIR/CMASS6169461.bam
+BAM6=$BAMDIR/CMASS6169443.bam
 
 (( echo -e "CHR\tPOS\t$BAM1\t$BAM2\t$BAM3\t$BAM4\t$BAM5\t$BAM6" | sed "s;\($BAMDIR\/\|.bam\);;g" ); \
 (samtools depth -a -r chr7:18059155-18120834 $BAM1 $BAM2 $BAM3 $BAM4 $BAM5 $BAM6)) > $DIR/output/cichlid_region_depth.txt
