@@ -828,13 +828,26 @@ Folded SFS for all of chromosome 7:
 
 <summary> click for SFS comparison </summary>
 
-The following plots were produced using the R code
+```bash
+# barplot
+$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/output/chr7_folded_sfs 1 bar
 
+# scatterplot
+$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/output/chr7_folded_sfs 1 scatter
+```
+The following two plots provide essentially the same information and just show different ways of comparing the observed to the expected SFS.
+
+![sfs_barplot_comparison](./outputs/obs_vs_expected_sfs_barplot.png)
+
+![sfs_scatter_comparison](./outputs/obs_vs_expected_sfs_plot.png)
+
+Describe how and why you think the observed SFS differs from the expected SFS.
+
+Code use to produce the SFS comparison plots
 ```bash
 #!/usr/bin/env Rscript
 
 # compare_sfs.R <SFS file> <output prefix> <use folded (0|1)> <plot type: "bar"|"scatter">
-# Note this script uses old ANGSD SFS folding format (N+1 entries)
 
 # parse inputs
 args <- commandArgs(trailingOnly=TRUE)
@@ -845,10 +858,10 @@ fold <- as.numeric(args[3]) # is the SFS folded (1 = yes, 0 = no)
 plottype <- args[4]
 
 obs <- obs[-1] # remove fixed category
-s = sum(obs) # number segregating sites
-
-nchr = ifelse(fold, 2*length(obs), length(obs)) # number chromosomes
+nchr = length(obs) # number chromosomes
 n = nchr/2
+if (fold) obs <- obs[1:n] # format observed SFS
+s =  sum(obs) # number segregating sites
 nlab = ifelse(fold,n,nchr)
 
 # calculate expected unfolded SFS counts
@@ -880,21 +893,6 @@ if (plottype == "bar") {
         invisible(dev.off())
 } else stop("Unrecognized plot type")
 ```
-
-```bash
-# barplot
-$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/output/chr7_folded_sfs 1 bar
-
-# scatterplot
-$DATDIR/scripts/compare_sfs.R $DATDIR/output/calmas_region_folded_chr7.sfs $DIR/output/chr7_folded_sfs 1 scatter
-```
-The following two plots provide essentially the same information and just show different ways of comparing the observed to the expected SFS.
-
-![sfs_barplot_comparison](./outputs/obs_vs_expected_sfs_barplot.png)
-
-![sfs_scatter_comparison](./outputs/obs_vs_expected_sfs_plot.png)
-
-Describe how and why you think the observed SFS differs from the expected SFS.
 
 </details>
 

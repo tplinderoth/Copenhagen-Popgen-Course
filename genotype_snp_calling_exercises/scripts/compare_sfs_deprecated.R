@@ -11,10 +11,10 @@ fold <- as.numeric(args[3]) # is the SFS folded (1 = yes, 0 = no)
 plottype <- args[4]
 
 obs <- obs[-1] # remove fixed category
-nchr = length(obs) # number chromosomes
+s = sum(obs) # number segregating sites
+
+nchr = ifelse(fold, 2*length(obs), length(obs)) # number chromosomes
 n = nchr/2
-if (fold) obs <- obs[1:n] # format observed SFS
-s =  sum(obs) # number segregating sites
 nlab = ifelse(fold,n,nchr)
 
 # calculate expected unfolded SFS counts
