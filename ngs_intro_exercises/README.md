@@ -254,26 +254,29 @@ cat $DIR/output/mapq_example.pileup | column -t | less -S
 
 </details>
 
-## IGV (Integrative Viewer Genomics)
+## IGV (Integrative Genomics Viewer)
 Executing the commands in this section is optional because running a visualization program like IGV is painfully slow over
-a remote connection, but I've included instructions on how to run it so that you can try it out later. Still read through the section.
+a remote connection, but I've included instructions on how to run it so that you can try it out later. I would encourage 
+you to read this section still so that you familiarize yourself with what IGV can do.
 
-A useful way to visualize mapping information is with the Integrative Genomics Viewer (IGV)
+The Integrative Genomics Viewer (IGV) provies a useful way to visualize mapping information.
 
 	# start up igv
 	$IGV
 
 	# SKIP THE FOLLOWING (it's already been done for you)
+	
 	# load reference genome
-	# In top menu: 'Genomes' -> 'Load Genome from File...' and select /ricco/data/tyer/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa
+	# In the drop-down menu: 'Genomes' -> 'Load Genome from File...' and select /ricco/data/tyer/ref/GCA_900246225.3_fAstCal1.2_genomic_chromnames_mt.fa
+	
 	# load BAM
 	# In top menu: 'File' -> 'Load from File...' select /ricco/data/tyler/bams/CMASS6607991.bam
 	
 	# START HERE
-	# 'File -> Open session... -> '+ Other locations/Computer/ricco/data/tyler/igv_sessions/CMASS6607991.xml' 
-	# In the box next to 'Go' type 'chr7:18,078,500-18,102,000' and press 'Go'
-	# Right-click on the track containing the reads in the IGV window and select 'view as pairs' and 'Group alignment by' -> 'pair orientation'
-	# click on one of the green reads and figure out where its mate maps. What orientation are these reads mapping in?
+	# 1) In the drop-down menu 'File -> Open session... -> '+ Other locations/Computer/ricco/data/tyler/igv_sessions/CMASS6607991.xml' 
+	# 2) In the box next to 'Go' type 'chr7:18,078,500-18,102,000' and press 'Go'
+	# 3) Right-click on the track containing the reads in the IGV window and select 'view as pairs' and 'Group alignment by' -> 'pair orientation'
+	# 4) click on one of the green reads and figure out where its mate maps. What orientation are these reads mapping in?
 	# You can use the scroll bar along the top to explore more mapping along chr7.
 
 <details>
@@ -282,18 +285,29 @@ A useful way to visualize mapping information is with the Integrative Genomics V
 
 ![bam_igv_region](./outputs/cichlid_igv_region.png)
 
+Which sample's reads map properly and who's do not?
+
+<details>
+
+<summary> Click here for answer </summary>
+
+CMASS6607991: improper
+CMASS6169461: proper
+
+</details>
+
+From the read orientations you can see that CMASS6607991 has improperly mapped re
+
 </details>
 
 <br> <br>
 
 ## coverage plot
 
-You can also see that some samples do not have unproperly mapped reads, e.g. CMASS6169461.
-
 ![igv_region_comparison](./outputs/cichlid_comparison_igv_region.png)
 
 Let's check the coverage spanning the region where reads were mapping in the RL orientation +/- ~20 kb. Do this for a subset of samples
-showing different mapping patterns (4 strange, 2 normal controls).
+showing different mapping patterns (4 strange, 2 normal).
 
 ``` bash
 BAM1=$BAMDIR/CMASS6608026.bam # improper mapping
@@ -305,9 +319,12 @@ BAM6=$BAMDIR/CMASS6169443.bam # proper mapping
 
 (( echo -e "CHR\tPOS\t$BAM1\t$BAM2\t$BAM3\t$BAM4\t$BAM5\t$BAM6" | sed "s;\($BAMDIR\/\|.bam\);;g" ); \
 (samtools depth -a -r chr7:18059155-18120834 $BAM1 $BAM2 $BAM3 $BAM4 $BAM5 $BAM6)) > $DIR/output/cichlid_region_depth.txt
+```
 
-# calculate relative depth and plot a depth profile
-# calmas_meta_sub.txt file contains cichlid metadata, including average genome-wide sequence depth
+```bash
+# Calculate depth relative to genome-wide average and plot a depth profile
+
+# Calmas_meta_sub.txt file contains cichlid metadata including the average genome-wide sequence depth.
 
 $SCRIPTS/plot_depth_region.R $DIR/output/cichlid_region_depth.txt $DATDIR/calmas_meta_sub.txt $DIR/output/region_depth_profile
 ```
@@ -372,19 +389,22 @@ evince "$DIR/output/region_depth_profile.pdf"
 ```
 <details>
 
-<summary> click here if you having trouble viewing the plot </summary>
+<summary> click here to view the depth plot </summary>
 
 ![region_depth_profile](./outputs/region_depth_profile.png)
 
 </details>
 
-What can you infer about the genomes of these six cichlids samples from the mapping information
+What can you infer about the genomes of these six cichlid samples from the mapping information
 that you've seen in IGV and depth profiling?
 
 <details>
 
 <summary> Click here for answer </summary>
-There is a tandem duplication on chr7:18,079,155-18,100,834 encompassing the *gsdf* gene. The tandem-duplicate allele masculinizes fish and so operates as a sex determiner. <br>
+
+There is a tandem duplication on chromosome 7 spanning positions 18,079,155-18,100,834. This duplication encompassses the *gonadal soma-derived factor*, *gsdf*, gene. 
+The duplication allele operates as a sex determiner by masculinizing its bearers. <br>
+
 ~1x relative depth = Homozygous for the non-duplicated *gsdf* allele (2 *gsdf* copies)<br>
 ~1.5x relative depth = Heterozygous for the duplication allele (3 *gsdf* copies)<br>
 ~2x = Homozygous for the duplication allele (4 *gsdf* copies)
