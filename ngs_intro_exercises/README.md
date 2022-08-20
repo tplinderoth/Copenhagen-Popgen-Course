@@ -287,7 +287,8 @@ The Integrative Genomics Viewer (IGV) provies a useful way to visualize mapping 
 
 </details>
 
-Now we'll compare mapping for the sample you just looked at to another one.
+Now we'll compare mapping for the sample you just looked at to another one.<br>
+Can you tell which one has improperly mapped reads?
 
 <details>
 
@@ -301,16 +302,14 @@ Can you tell which one has improperly mapped reads?
 
 <details>
 
-<Answer>
+<summary>Answer</summary>
 
-CMASS6607991 (top): improper
+CMASS6607991 (top): improper<br>
 CMASS6169461 (bottom): proper
 
 </details>
 
 <br> <br>
-
-![igv_region_comparison](./outputs/cichlid_comparison_igv_region.png)
 
 ## coverage plot
 
