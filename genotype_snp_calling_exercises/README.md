@@ -843,7 +843,7 @@ The following two plots provide essentially the same information and just show d
 
 Describe how and why you think the observed SFS differs from the expected SFS.
 
-Code use to produce the SFS comparison plots
+Code used to produce the SFS comparison plots:
 ```bash
 #!/usr/bin/env Rscript
 
