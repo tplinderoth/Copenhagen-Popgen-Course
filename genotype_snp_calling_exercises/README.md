@@ -37,8 +37,8 @@ BAMDIR=$DATDIR/bams
 SCRIPTS=$DATDIR/scripts
 ANGSD=/ricco/data/tyler/prog/bin/angsd
 ```
-If you did not yet complete the 'INTRODUCTION TO NGS DATA' excercises you'll need to copy over the quality controlled list of sites,
-which I provide a copy of (skip the following step if you completed the bcftools filtering):
+If you did not yet complete the Introduction to NGS Data excercises you'll need to copy over the quality controlled list of sites,
+which I've provided a copy of (skip the following step if you completed the bcftools filtering):
 
 ```bash
 # ONLY IF you don't aleady have the directory ~/ngs_intro/output then make it
@@ -50,18 +50,17 @@ cp /ricco/data/tyler/output/qc_sites.pos ~/ngs_intro/output/
  $ANGSD sites index ~/ngs_intro/output/qc_sites.pos
 ```
 
-We will perform most analyses with the program [ANGSD](http://www.popgen.dk/angsd/index.php/ANGSD) which is particularly
-good for working with low-medium coverage NGS data.
+We will perform most analyses with the program [ANGSD](http://www.popgen.dk/angsd/index.php/ANGSD) which is also accurate for low - medium coverage NGS data.
 
 ANGSD overview
 
 	$ANGSD --help
 
-Many of the calculation you do with ANGSD with be based on genotype likelihoods (GL)s,
-which will improve inference accuracy over hard calline genotypes (avoids snowballing errors).
+Many of the calculations that you do with ANGSD are based on genotype likelihoods (GL)s,
+which will improve accuracy over hard-called genotypes (avoids snowballing errors).
 <br>
-Let's calculate genotype likelihoods for the cichlids across the same 50 kb region that you filtered yesterday.
-We'll also apply some quality control filters when calculating GLs from the bam files. You can see a full list 
+Let's calculate genotype likelihoods for the cichlids at the same 50 kb region that you filtered yesterday.
+We'll also apply some quality control filters when calculating GLs from the bam files. You can see a full list of 
 options by running
 
 	$ANGSD -bam
