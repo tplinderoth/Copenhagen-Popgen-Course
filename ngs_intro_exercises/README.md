@@ -596,8 +596,8 @@ We removed 95160 sites, which represents ~10% of the sites with data. This seems
 </details>
 
 ## Bonus exercise: detecting mapping problems in low depth data
-When sequencing depth is very low, identifying genomic regions refractory to short read mapping can be more difficult based on 
-types of depth profiles that we examined earlier. It is also ineffective to 
+When sequencing depth is very low, identifying genomic regions refractory to short read mapping can be more difficult with the types of 
+methods covered previously. It is also ineffective to 
 detect these regions through excess heterozygosity from called genotypes due to the genotyping uncertainty.
 
 Here we'll use [ngsParalog](https://github.com/tplinderoth/ngsParalog) to detect regions of confounded mapping
