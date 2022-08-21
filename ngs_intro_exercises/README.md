@@ -59,6 +59,8 @@ FastQC will automatically detect file format type, but you can also specify it w
 fastqc -outdir "$DIR/output/" $DATDIR/fastq/*.fastq
 ```
 
+List the files that were dumped.
+
 ```bash
 ll "$DIR/output/"
 ```
