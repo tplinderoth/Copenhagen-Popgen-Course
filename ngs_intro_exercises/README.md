@@ -55,8 +55,13 @@ Have a look inside one of the frog fastq files:
 Explore the data quality with [fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/). You can get some help information with `fastqc --help`.
 FastQC will automatically detect file format type, but you can also specify it with `-f`.
 
-	fastqc -outdir "$DIR/output/" $DATDIR/fastq/*.fastq
-	ll "$DIR/output/"
+```bash	
+fastqc -outdir "$DIR/output/" $DATDIR/fastq/*.fastq
+```
+
+```bash
+ll "$DIR/output/"
+```
 
 You can scp the html files onto your local machine and view them in a browser. Here's an example of what the top of the web page would look like 
 for the CH1401_R2.fastq file:
