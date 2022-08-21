@@ -11,12 +11,12 @@ metadata on these samples.
 
 
 The goals of this exercise are to<br>
-* Estimate genotype likelihoods and posterior probabilities
+* Calculate genotype likelihoods and posterior probabilities
 * Call genotypes
-* Estimate allele frequencies and allele frequency posterior probabilities
+* Estimate allele frequencies and calculate allele frequency posterior probabilities
 * Call SNPs
 * Estimate the site frequency spectrum
-* Perform a Principle Component Analysis among individuals without calling genotypes
+* Perform a Principle Component Analysis based on genotype posterior probabilities
 * Perform a Dxy analysis of ecomorph differentiation
 
 Make directories and set environmental variables for this session
