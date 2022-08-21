@@ -583,14 +583,14 @@ We removed 95160 sites, which represents ~10% of the sites with data. This seems
 
 </details>
 
-## Bonus exercise: Identifying mapping issues with low depth data
+## Bonus exercise: detecting mapping problems in low depth data
 Identifying genomic regions refractory to short read mapping can be more difficult to identify from the 
 types of depth profiles that we examined earlier in low depth situations. It is also ineffective to 
-detect these regions through excess heterozygosity from called genotypes due to the genotyping uncertainty.<\br>
+detect these regions through excess heterozygosity from called genotypes due to the genotyping uncertainty.
 
 Here we'll use [ngsParalog](https://github.com/tplinderoth/ngsParalog) to detect regions of confounded mapping
 (which could be due to things like duplications), which is effective even in low-depth scenarios when there is 
-population-level data. It is also useful for finding misassmbled or collapsed regions in reference genomes.<\br>
+population-level data. It is also useful for finding misassmbled or collapsed regions in reference genomes.
 
 Non-variable sites are not informative for ngsParalog, so we'll generate a list of unfiltered SNPs in a 256 kb region
 around the *gsdf* duplication that we can analyze.
@@ -606,7 +606,7 @@ $DATDIR/prog/ngsParalog/ngsParalog calcLR -infile - > $DIR/output/bad_map_lr.txt
 <details>
 <summary>View the output</summary>
 
-The first 10 lines of output look like
+The first 10 lines of output, `$DIR/output/bad_map_lr.txt`, look like
 ```bash
 chr7            	17902546    	65.82998510	65.82998510	0.00000000
 chr7            	17902969    	90.19783220	89.49558313	1.40449814
@@ -619,15 +619,14 @@ chr7            	17905120    	52.10334983	50.81775994	2.57117978
 chr7            	17905234    	7.34078068	7.34078068	0.00000000
 chr7            	17905242    	88.54324830	87.24670809	2.59308043
 ```
-The first two columns specify the site and the 5th column is the LRT statistic for whether there are multiple 
-loci covering a given site. This statistic is distributed according to 50/50 mixture of a chi-square with 0 and 1 
+The first two columns specify the site and the 5th column is the LRT statistic for whether reads from multiple 
+loci map to a given site. This statistic is distributed according to a 50/50 mixture of a chi-square with 0 and 1 
 degrees of freedom.
 
 ![ngsParalog_LR_plot](./outputs/ngsParalog_LR_plot.png)
 
 The tandem *gsdf* duplication is clearly visible as well as some other regions with confounded 
-mapping, which you can confirm by examining the reads covering these positions with high LRT using 
-mpileup for example.
+mapping (LRT statistic peaks). You can confirm that the data at these sites looks unusual with mpileup for example.
 
 </details>
 
