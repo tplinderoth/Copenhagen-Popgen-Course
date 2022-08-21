@@ -16,7 +16,7 @@ These samples were sequenced to an average depth of 5.7x.
 
 <img src="https://github.com/tplinderoth/Copenhagen-Popgen-Course/blob/main/images/calliptera.png" width="50%">
 
-The goal of today is to learn how to prepare raw NGS data for downstream analyses. Specifically, you will:
+The goal of today is to learn how to prepare raw NGS data for downstream analyses. Specifically, you will
 * Become familiar with FASTQ format
 * Learn how to assess and control for data quality
 * Map sequencing reads to a reference sequence
