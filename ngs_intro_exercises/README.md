@@ -245,7 +245,7 @@ Here's what the data looks like for the first 6 individuals in the bam file, `sa
 Looking at this data do you think you could confidently call genotypes?
 
 Now figure out how to generate the same pileup but one that includes mapping quality and that only consider reads with a minimum quality/BAQ of 20.
-Write the output to a file called 'mapq_example.pileup' in the 'output' ${DIR}/output/ <br>
+Write the output to a file called 'mapq_example.pileup' in the ${DIR}/output/ directory <br>
 
 You can see help for samtools mpileup with
 	samtools mpileup --help
