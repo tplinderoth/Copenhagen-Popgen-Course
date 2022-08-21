@@ -612,7 +612,7 @@ bcftools query -f '%CHROM\t%POS\n' -i 'TYPE="snp" & ALT !~ ","' -r chr7:17902540
 
 Now pass mpileup input for all 40 cichlid samples to ngsParalog.
 ```bash
-$ samtools mpileup -b $BAMLIST -A -d 10000 -q 0 -Q 0 --ff UNMAP,DUP -l $DIR/output/calmas_raw_17902540_18158460_snps.pos -r chr7:17902540-18158460 | \
+samtools mpileup -b $BAMLIST -A -d 10000 -q 0 -Q 0 --ff UNMAP,DUP -l $DIR/output/calmas_raw_17902540_18158460_snps.pos -r chr7:17902540-18158460 | \
 $DATDIR/prog/ngsParalog/ngsParalog calcLR -infile - > $DIR/output/bad_map_lr.txt
 ```
 <details>
