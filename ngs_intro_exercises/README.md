@@ -272,7 +272,7 @@ Executing the commands in this section is optional because running a visualizati
 a remote connection, but I've included instructions on how to run it so that you can try it out later. I would encourage 
 you to read this section still so that you familiarize yourself with what IGV can do.
 
-The Integrative Genomics Viewer (IGV) provies a useful way to visualize mapping information.
+The [Integrative Genomics Viewer](https://software.broadinstitute.org/software/igv/) (IGV) provies a useful way to visualize mapping information.
 
 	# start up igv
 	$IGV
