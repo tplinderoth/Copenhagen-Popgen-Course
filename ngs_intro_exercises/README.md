@@ -437,7 +437,8 @@ The duplication allele operates as a sex determiner by masculinizing its bearers
 
 ## bcftools filtering
 
-Generate a VCF with some info that we can base quality control on. We'll use the first 1 MB of chr7 for this example.
+Generate a VCF with some info that we can base quality control on. We'll use the first 1 MB of chr7 for this example. (This will take a little while 
+so be patient).
 
 ```bash
 $BCFTOOLS mpileup -f $CICHREF -b $BAMLIST \
