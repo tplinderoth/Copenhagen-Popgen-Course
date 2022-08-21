@@ -2,7 +2,7 @@ Estimation of allele frequencies, SNP calling, and genotype calling from NGS dat
 =================================================================================
 
 For these excercises you will use whole genome sequencing data from 40 individuals of *Astatotilapia calliptera* from the crater 
-Lake Masoko in Tanzania. Among these individuals, 20 represent a "littoral" ecomorph and the other 20 a 
+Lake Masoko in Tanzania. Twenty of these samples represent a "littoral" ecomorph and the other 20 a 
 "benthic" ecomorph. These individuals have been sequenced to a median coverage of 5.7x. See `/ricco/data/tyler/calmas_meta_sub.txt` for 
 metadata on these samples.
 <br>
@@ -10,7 +10,7 @@ metadata on these samples.
 ![masoko_calliptera_ecomorphs](../images/masoko_calliptera_ecomorphs.png)
 
 
-The goals will be to<br>
+The goals of this exercise are to<br>
 * Estimate genotype likelihoods and posterior probabilities
 * Call genotypes
 * Estimate allele frequencies and allele frequency posterior probabilities
