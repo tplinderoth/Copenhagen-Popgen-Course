@@ -346,8 +346,7 @@ BAM6=$BAMDIR/CMASS6169443.bam
 
 ```bash
 # Calculate depth relative to genome-wide average and plot a depth profile
-
-# Calmas_meta_sub.txt file contains cichlid metadata including the average genome-wide sequence depth.
+# Note: Calmas_meta_sub.txt file contains cichlid metadata including the average genome-wide sequence depth.
 
 $SCRIPTS/plot_depth_region.R $DIR/output/cichlid_region_depth.txt $DATDIR/calmas_meta_sub.txt $DIR/output/region_depth_profile
 ```
