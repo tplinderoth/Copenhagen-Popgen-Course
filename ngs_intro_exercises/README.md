@@ -247,8 +247,10 @@ Looking at this data do you think you could confidently call genotypes?
 Now figure out how to generate the same pileup but one that includes mapping quality and that only consider reads with a minimum quality/BAQ of 20.
 Write the output to "${DIR}/output/mapq_example.pileup".  <br>
 
-You can see help for samtools mpileup with
-	samtools mpileup --help
+You can see help for samtools mpileup with 
+```bash
+samtools mpileup --help
+```
 
 <details>
 
