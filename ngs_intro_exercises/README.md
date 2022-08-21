@@ -601,8 +601,8 @@ methods covered previously. For example, it is ineffective to detect these regio
 due to the genotyping uncertainty and differences in depth become less apparent.
 
 Here we'll use [ngsParalog](https://github.com/tplinderoth/ngsParalog) to detect regions of confounded mapping
-(which could be due to things like duplications), which is effective even in low-depth scenarios when there is 
-population-level data. It is also useful for finding misassmbled or collapsed regions in reference genomes.
+(which could be due to things like duplications). This method is effective even in low-depth scenarios when population-level data is available. 
+It is also useful for finding misassmbled or erroneously collapsed regions in reference genomes.
 
 Non-variable sites are not informative for ngsParalog, so we'll generate a list of unfiltered SNPs in a 256 kb region
 around the *gsdf* duplication that we can analyze.
