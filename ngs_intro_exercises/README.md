@@ -170,7 +170,7 @@ samtools index "$DIR/output/CH1401.bam"
 
 ## Working with mapped data
 
-After you've mapped your cleaned-up fastq reads, you can have a look at the mapping information in SAM/BAM/CRAM files with samtools.
+After you've mapped your cleaned fastq reads you can have a look at the mapping information in SAM/BAM/CRAM files with samtools.
 You can include the header with `-h`. When viewing the file type `/\@RG` and press `enter` to skip down to the bottom of the header to check that the
 read group information that we intended to add is indeed there. Note also that you should see 'RG:Z:CH1401_capture1' associated with all of the reads.
 
