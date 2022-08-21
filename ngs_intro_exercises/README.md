@@ -455,7 +455,7 @@ can use to filter on. The various VCF statistics are defined in the VCF header. 
 
 	$BCFTOOLS view $DIR/output/calmas_allsites.bcf.gz | less -S
 
-Lets extract some information for quantities we might want to examine the distribution of prior to filtering. 
+Lets extract some information for quantities that we might want to examine the distribution of prior to filtering. 
 
 ``` bash
 ((echo -e "CHROM\tPOS\tDP\tMQ\tSTRAND_BIAS\tBASEQ_BIAS\tMQ_BIAS\tPOS_BIAS\tEXCHET"); \
