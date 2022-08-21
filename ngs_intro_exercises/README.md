@@ -130,7 +130,8 @@ fastqc -outdir "$DIR/output/" "$DIR/output/CH1401_R2_clean.fastq.gz"
 
 Note that the warning for the read length distribution is not of concern in this case. 
 It's only alerting you that there are some short reads now, which we expect based on how we trimmed. 
-Now you should know how to check the read length distribution with FastQC. Give it a try if you want.
+Now you should know how to check the read length distribution with FastQC. Give it a try if you want (you 
+should see the plot on the far right above).
 
 </details>
 
