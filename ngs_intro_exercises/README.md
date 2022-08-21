@@ -258,8 +258,10 @@ samtools mpileup --help
 
 ``` bash
 samtools mpileup -b $BAMLIST -f $CICHREF -r chr7:10000-10015 -Q 20 --output-MQ > $DIR/output/mapq_example.pileup
+```
 
-# examine the file in an easy-to-read way (aligns the columns nicely)
+```bash
+# Examine the file in an easy-to-read way (aligns the columns nicely)
 cat $DIR/output/mapq_example.pileup | column -t | less -S
 ```
 
