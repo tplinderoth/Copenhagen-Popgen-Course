@@ -638,7 +638,7 @@ degrees of freedom.
 Plot LRT statistic
 
 ```bash
-$DATDIR/scripts/plot_duplr.R $DIR/output/bad_map_lr.txt ngsParalog_LR_plot
+$DATDIR/scripts/plot_duplr.R $DIR/output/bad_map_lr.txt $DIR/output.ngsParalog_LR_plot
 ```
 
 ![ngsParalog_LR_plot](./outputs/ngsParalog_LR_plot.png)
