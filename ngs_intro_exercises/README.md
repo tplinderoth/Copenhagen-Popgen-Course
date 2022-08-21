@@ -466,7 +466,7 @@ Lets extract some information for quantities that we might want to examine the d
 less $DIR/output/allsites_stats.txt
 ```
 
-Let's plot these values and examine percentiles to get an idea of extreme values may be
+Let's plot the values and examine the percentiles to get an idea of what extreme values may be for these data.
 ```bash
 $SCRIPTS/plotStatDist.R $DIR/output/allsites_stats.txt $DIR/output/allsites_stats_plot
 ```
