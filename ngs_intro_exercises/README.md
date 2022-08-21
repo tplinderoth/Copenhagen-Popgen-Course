@@ -311,9 +311,9 @@ CMASS6169461 (bottom): proper
 
 <br> <br>
 
-## coverage plot
+## Sequencing depth plot
 
-Let's check the coverage spanning the region where reads were mapping in the RL orientation +/- ~20 kb. Do this for a subset of samples
+Let's check the depth spanning the region where reads were mapping in the RL orientation +/- ~20 kb. Do this for a subset of samples
 showing different mapping patterns (4 strange, 2 normal).
 
 ``` bash
@@ -412,7 +412,7 @@ that you've seen in IGV and depth profiling?
 
 <summary> Click here for answer </summary>
 
-There is a tandem duplication on chromosome 7 spanning positions 18,079,155-18,100,834. This duplication encompassses the *gonadal soma-derived factor*, *gsdf*, gene. 
+There is a tandem duplication on chromosome 7 spanning positions 18,079,155-18,100,834. This duplication encompasses the *gonadal soma-derived factor*, *gsdf*, gene. 
 The duplication allele operates as a sex determiner by masculinizing its bearers. <br>
 
 ~1x relative depth = Homozygous for the non-duplicated *gsdf* allele (2 *gsdf* copies)<br>
@@ -425,16 +425,16 @@ The duplication allele operates as a sex determiner by masculinizing its bearers
 
 ## bcftools filtering
 
-Generate a VCF with some info that we can filter on: the first 1 MB of chr7 (this will take around 1 minute).
+Generate a VCF with some info that we can base quality control on. We'll use the first 1 MB of chr7 for this example.
 
 ```bash
 $BCFTOOLS mpileup -f $CICHREF -b $BAMLIST \
 -d 40000 -L 40000 -r chr7:1-1000000 -q 13 -Q 13 --ff UNMAP,SECONDARY,QCFAIL,DUP -a FORMAT/AD,FORMAT/DP,QS,FORMAT/SCR,INFO/AD,INFO/SCR -p O u \
 | $BCFTOOLS call --ploidy 2 -a PV4,GQ,GP -m -P 0.001 -O u | $BCFTOOLS +fill-tags -O b -o $DIR/output/calmas_allsites.bcf.gz -- -t'AF,NS,ExcHet'
+```
 
-# index the bcf for rapid access to specific regions with 'bcftools view -r ...'
-# not necessary now, but demonstrating how this is done
-
+```bash
+# Index the bcf for rapid access to specific regions with 'bcftools view -r ...'
 bcftools index $DIR/output/calmas_allsites.bcf.gz
 ```
 The vcf is in compressed binary fomat to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
@@ -442,22 +442,63 @@ can use to filter on.
 
 	$BCFTOOLS view $DIR/output/calmas_allsites.bcf.gz | less -S
 
-Lets see how we could extract some information for quantities we might want to examine the distribution of prior to filtering.
+Lets see how we can extract some information for quantities we might want to examine the distribution of prior to filtering. 
+The various VCF statistics are defined in the VCF header. Check that out with `bcftools view -h $DIR/output/calmas_allsites.bcf.gz`.
 
 ``` bash
 ((echo -e "CHROM\tPOS\tDP\tMQ\tSTRAND_BIAS\tBASEQ_BIAS\tMQ_BIAS\tPOS_BIAS\tEXCHET"); \
 ($BCFTOOLS query -f "%CHROM\t%POS\t%INFO/DP\t%INFO/MQ\t%INFO/PV4{0}\t%INFO/PV4{1}\t%INFO/PV4{2}\t%INFO/PV4{3}\t%ExcHet\n" $DIR/output/calmas_allsites.bcf.gz)) > $DIR/output/allsites_stats.txt
-
+```
+```bash
 # Have a look ('.' indicates that the value is missing)
 less $DIR/output/allsites_stats.txt
+```
 
-# let's plot these values and examine percentiles to get an idea of extremes
+Let's plot these values and examine percentiles to get an idea of extreme values may be
+```bash
 $SCRIPTS/plotStatDist.R $DIR/output/allsites_stats.txt $DIR/output/allsites_stats_plot
+```
 
+```bash
 evince $DIR/output/allsites_stats_plot.pdf
 ```
 
-What are these different quantities measuring? The info can be found in the VCF header.
+<details>
+
+<summary> click here to see quality statistic percentiles and plots </summary>
+
+        Percentiles
+
+                            0.1%           1%          10%          20%          30%
+        DP          1.000000e+00 1.200000e+01 1.060000e+02 1.570000e+02 1.780000e+02
+        MQ          1.300000e+01 2.200000e+01 3.500000e+01 4.300000e+01 5.400000e+01
+        STRAND_BIAS 4.761011e-07 1.219852e-02 3.061478e-01 4.393060e-01 4.701490e-01
+        BASEQ_BIAS  5.224217e-31 6.404809e-21 1.103558e-12 3.795092e-10 1.480062e-08
+        MQ_BIAS     0.000000e+00 2.802600e-45 1.185121e-01 1.000000e+00 1.000000e+00
+        POS_BIAS    1.145862e-04 2.673683e-03 3.093082e-02 1.212964e-01 2.907322e-01
+        EXCHET      1.022730e-11 5.025090e-06 2.091916e-01 4.348290e-01 5.858350e-01
+                            40%         50%          60%         70%          80%
+        DP          1.90000e+02 2.00000e+02 2.090000e+02 2.19000e+02 2.300000e+02
+        MQ          5.90000e+01 6.00000e+01 6.000000e+01 6.00000e+01 6.000000e+01
+        STRAND_BIAS 4.91736e-01 7.68149e-01 1.000000e+00 1.00000e+00 1.000000e+00
+        BASEQ_BIAS  2.56738e-07 2.99443e-06 3.206144e-05 3.75725e-04 9.199838e-03
+        MQ_BIAS     1.00000e+00 1.00000e+00 1.000000e+00 1.00000e+00 1.000000e+00
+        POS_BIAS    1.00000e+00 1.00000e+00 1.000000e+00 1.00000e+00 1.000000e+00
+        EXCHET      7.00602e-01 7.97872e-01 8.622170e-01 9.16105e-01 9.589040e-01
+                           90% 99%   99.9%
+        DP          246.000000 461 954.804
+        MQ           60.000000  60  60.000
+        STRAND_BIAS   1.000000   1   1.000
+        BASEQ_BIAS    0.254081   1   1.000
+        MQ_BIAS       1.000000   1   1.000
+        POS_BIAS      1.000000   1   1.000
+        EXCHET        0.987342   1   1.000
+
+![quality_stat_distribution_1](./outputs/allsites_stat_plot_1.png)
+<br>
+![quality_stat_distribution_2](./outputs/allsites_stat_plot_2.png)
+
+</details>
 
 <details>
 
@@ -501,61 +542,30 @@ invisible(dev.off())
 
 </details>
 <br>
-<details>
 
-<summary> click here to see quality statistic percentiles and plots </summary>
-
-	Percentiles
-	
-	                    0.1%           1%          10%          20%          30%
-	DP          1.000000e+00 1.200000e+01 1.060000e+02 1.570000e+02 1.780000e+02
-	MQ          1.300000e+01 2.200000e+01 3.500000e+01 4.300000e+01 5.400000e+01
-	STRAND_BIAS 4.761011e-07 1.219852e-02 3.061478e-01 4.393060e-01 4.701490e-01
-	BASEQ_BIAS  5.224217e-31 6.404809e-21 1.103558e-12 3.795092e-10 1.480062e-08
-	MQ_BIAS     0.000000e+00 2.802600e-45 1.185121e-01 1.000000e+00 1.000000e+00
-	POS_BIAS    1.145862e-04 2.673683e-03 3.093082e-02 1.212964e-01 2.907322e-01
-	EXCHET      1.022730e-11 5.025090e-06 2.091916e-01 4.348290e-01 5.858350e-01
-	                    40%         50%          60%         70%          80%
-	DP          1.90000e+02 2.00000e+02 2.090000e+02 2.19000e+02 2.300000e+02
-	MQ          5.90000e+01 6.00000e+01 6.000000e+01 6.00000e+01 6.000000e+01
-	STRAND_BIAS 4.91736e-01 7.68149e-01 1.000000e+00 1.00000e+00 1.000000e+00
-	BASEQ_BIAS  2.56738e-07 2.99443e-06 3.206144e-05 3.75725e-04 9.199838e-03
-	MQ_BIAS     1.00000e+00 1.00000e+00 1.000000e+00 1.00000e+00 1.000000e+00
-	POS_BIAS    1.00000e+00 1.00000e+00 1.000000e+00 1.00000e+00 1.000000e+00
-	EXCHET      7.00602e-01 7.97872e-01 8.622170e-01 9.16105e-01 9.589040e-01
-	                   90% 99%   99.9%
-	DP          246.000000 461 954.804
-	MQ           60.000000  60  60.000
-	STRAND_BIAS   1.000000   1   1.000
-	BASEQ_BIAS    0.254081   1   1.000
-	MQ_BIAS       1.000000   1   1.000
-	POS_BIAS      1.000000   1   1.000
-	EXCHET        0.987342   1   1.000
-
-![quality_stat_distribution_1](./outputs/allsites_stat_plot_1.png)
-<br>
-![quality_stat_distribution_2](./outputs/allsites_stat_plot_2.png)
-
-</details>
-
-Filter the VCF. We'll avoid dumping another VCF with just sites that pass our quality controls by extracting just the sites.
-We can use these sites with ANGSD tomorrow.
+Filter the VCF. We'll extract a list of sites that pass quality control cutoffs.
+We can use these sites with ANGSD tomorrow for downstream inferences.
 
 ```bash
 $BCFTOOLS norm -f $CICHREF -m +any $DIR/output/calmas_allsites.bcf.gz \
 | $BCFTOOLS view -i 'N_PASS(FMT/DP[0-14] > 2) > 5 && N_PASS(FMT/DP[15-39] > 2) > 5' $DIR/output/calmas_allsites.bcf.gz \
 | $BCFTOOLS view -e 'INDEL=1 || INFO/MQ < 25 || INFO/DP > 700 || INFO/PV4[0] < 1.2e-02 || INFO/PV4[1] < 6.4e-21 || INFO/PV4[2] < 2.8e-45 || INFO/PV4[3] < 2.7e-3 || INFO/ExcHet < 5e-06' -M 2 \
 | $BCFTOOLS query -f "%CHROM\t%POS\n" > $DIR/output/qc_sites.pos
+```
 
-# Lets have a look at our list of quality-controlled sites
+Can you describe what each of the filters is doing?
+
+Lets have a look at our list of quality-controlled sites
+```bash
 less $DIR/output/qc_sites.pos
+```
 
-# If we want to use these sites in ANGSD (tomorrow), we need to index them
+If we want to use these sites in ANGSD (tomorrow), we need to index them
+```bash
 $ANGSD sites index $DIR/output/qc_sites.pos
 ```
 
-Can you describe what each of the filters was doing?
-What pecentage of site was removed (discounting those with entirely missing data)?
+What pecentage of sites was removed (discounting those with entirely missing data)?
 
 <details>
 
@@ -569,16 +579,76 @@ wc -l $DIR/output/qc_sites.pos
 # 900037 sites passed quality-control
 ```
 
-Therefore, we removed 95160 sites, which represents ~10% of the sites with data. This seems reasonable.
+We removed 95160 sites, which represents ~10% of the sites with data. This seems reasonable (~10-20% is pretty normal).
 
 </details>
 
-You could bypass dumping the initial VCF entirely using one large string of pipes. Give it a try.
+## Bonus exercise: Identifying mapping issues with low depth data
+Identifying genomic regions refractory to short read mapping can be more difficult to identify from the 
+types of depth profiles that we examined earlier in low depth situations. It is also ineffective to 
+detect these regions through excess heterozygosity from called genotypes due to the genotyping uncertainty.<\br>
 
-ngsParalog Bonus
+Here we'll use [ngsParalog](https://github.com/tplinderoth/ngsParalog) to detect regions of confounded mapping
+(which could be due to things like duplications), which is effective even in low-depth scenarios when there is 
+population-level data. It is also useful for finding misassmbled or collapsed regions in reference genomes.<\br>
 
+Non-variable sites are not informative for ngsParalog, so we'll generate a list of unfiltered SNPs in a 256 kb region
+around the *gsdf* duplication that we can analyze.
 ```bash
-bcftools query -f '%CHROM\t%POS\n' -i 'TYPE="snp" & ALT !~ ","' $DATDIR/vcf/calmas_allsites_17000000_19000000.bcf.gz > $DIR/output/calmas_raw_17000000_19000000_snps.pos
-
-samtools mpileup -b $BAMLIST -A -d 10000 -q 0 -Q 0 --ff UNMAP,DUP -l $DIR/output/calmas_raw_17000000_19000000_snps.pos -r chr7:17000000-19000000 | $DATDIR/prog/ngsParalog/ngsParalog calcLR -infile - -minQ 20 -minind 20 > $DIR/output/multimap_lr.txt
+bcftools query -f '%CHROM\t%POS\n' -i 'TYPE="snp" & ALT !~ ","' -r chr7:17902540-18158460 $DATDIR/vcf/calmas_allsites_17000000_19000000.bcf.gz > $DIR/output/calmas_raw_17902540_18158460_snps.pos
 ```
+
+Now pass mpileup input for all 40 cichlid samples to ngsParalog.
+```bash
+$ samtools mpileup -b $BAMLIST -A -d 10000 -q 0 -Q 0 --ff UNMAP,DUP -l $DIR/output/calmas_raw_17902540_18158460_snps.pos -r chr7:17902540-18158460 | \
+$DATDIR/prog/ngsParalog/ngsParalog calcLR -infile - > $DIR/output/bad_map_lr.txt
+```
+<details>
+<summary>View the output</summary>
+
+The first 10 lines of output look like
+```bash
+chr7            	17902546    	65.82998510	65.82998510	0.00000000
+chr7            	17902969    	90.19783220	89.49558313	1.40449814
+chr7            	17903736    	117.07359342	116.38463971	1.37790742
+chr7            	17904129    	102.99866257	102.13857697	1.72017121
+chr7            	17904255    	68.25160703	67.99860716	0.50599975
+chr7            	17904712    	71.97002494	71.67183068	0.59638851
+chr7            	17905017    	13.80116391	12.75496570	2.09239643
+chr7            	17905120    	52.10334983	50.81775994	2.57117978
+chr7            	17905234    	7.34078068	7.34078068	0.00000000
+chr7            	17905242    	88.54324830	87.24670809	2.59308043
+```
+The first two columns specify the site and the 5th column is the LRT statistic for whether there are multiple 
+loci covering a given site. This statistic is distributed according to 50/50 mixture of a chi-square with 0 and 1 
+degrees of freedom.
+
+![ngsParalog_LR_plot](./outputs/ngsParalog_LR_plot.png)
+
+The tandem *gsdf* duplication is clearly visible as well as some other regions with confounded 
+mapping, which you can confirm by examining the reads covering these positions with high LRT using 
+mpileup for example.
+
+</details>
+
+<details>
+<summary>Code to make ngsParalog plot</summary>
+```bash
+#!/usr/bin/env Rscript
+
+args <- commandArgs(trailingOnly=TRUE)
+
+dat <- read.table(args[1], head=FALSE)
+outprefix <- args[2]
+gsdf.cord <- c(18079155,18100834)
+
+pdf(file=paste0(outprefix,".pdf"))
+
+plot(x=dat$V2,y=dat$V5,type="b",xlab="Chr7 position", ylab="LRT", main="")
+abline(v=gsdf.cord[1], col="red", lty=2)
+abline(v=gsdf.cord[2], col="red", lty=2)
+text(x=18111000, y=300, "gsdf duplication")
+
+invisible(dev.off())
+```
+</details>
