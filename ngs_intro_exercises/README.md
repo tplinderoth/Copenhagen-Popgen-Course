@@ -450,13 +450,12 @@ $BCFTOOLS mpileup -f $CICHREF -b $BAMLIST \
 # Index the bcf for rapid access to specific regions with 'bcftools view -r ...'
 bcftools index $DIR/output/calmas_allsites.bcf.gz
 ```
-The vcf is in compressed binary fomat to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
-can use to filter on.
+The VCF is in compressed binary fomat to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
+can use to filter on. The various VCF statistics are defined in the VCF header. You can print just the head with `bcftools view -h $DIR/output/calmas_allsites.bcf.gz`.
 
 	$BCFTOOLS view $DIR/output/calmas_allsites.bcf.gz | less -S
 
-Lets see how we can extract some information for quantities we might want to examine the distribution of prior to filtering. 
-The various VCF statistics are defined in the VCF header. Check that out with `bcftools view -h $DIR/output/calmas_allsites.bcf.gz`.
+Lets extract some information for quantities we might want to examine the distribution of prior to filtering. 
 
 ``` bash
 ((echo -e "CHROM\tPOS\tDP\tMQ\tSTRAND_BIAS\tBASEQ_BIAS\tMQ_BIAS\tPOS_BIAS\tEXCHET"); \
