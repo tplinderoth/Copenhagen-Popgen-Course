@@ -637,6 +637,7 @@ mapping (LRT statistic peaks). You can confirm that the data at these sites look
 </details>
 
 <details>
+
 <summary>Code to make ngsParalog plot</summary>
 
 ```bash
