@@ -1,5 +1,7 @@
 #!/usr/bin/env Rscript
 
+# plot_duplr.txt <ngsParalog calclR output file> <oufile prefix>
+
 args <- commandArgs(trailingOnly=TRUE)
 
 dat <- read.table(args[1], head=FALSE)
