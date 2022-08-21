@@ -623,6 +623,12 @@ The first two columns specify the site and the 5th column is the LRT statistic f
 loci map to a given site. This statistic is distributed according to a 50/50 mixture of a chi-square with 0 and 1 
 degrees of freedom.
 
+Plot LRT statistic
+
+```bash
+$DATDIR/scripts/plot_duplr.R $DIR/output/bad_map_lr.txt ngsParalog_LR_plot
+```
+
 ![ngsParalog_LR_plot](./outputs/ngsParalog_LR_plot.png)
 
 The tandem *gsdf* duplication is clearly visible as well as some other regions with confounded 
@@ -632,6 +638,7 @@ mapping (LRT statistic peaks). You can confirm that the data at these sites look
 
 <details>
 <summary>Code to make ngsParalog plot</summary>
+
 ```bash
 #!/usr/bin/env Rscript
 
