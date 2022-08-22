@@ -212,7 +212,7 @@ samtools view $DATDIR/bams/CMASS6169443.bam chr7:1000-1010 | less -S
 
 ## SAMtools mpileup
 
-Lets looks at the mapped data on chr7:10000-10015 for all samples as a pileup
+Lets look at the mapped data on chr7:10000-10015 for all samples as a pileup
 
 ```bash
 # check out the bam list
@@ -272,7 +272,7 @@ Executing the commands in this section is optional because running a visualizati
 a remote connection, but I've included instructions on how to run it so that you can try it out later. I would encourage 
 you to read this section still so that you familiarize yourself with what IGV can do.
 
-The [Integrative Genomics Viewer](https://software.broadinstitute.org/software/igv/) (IGV) provies a useful way to visualize mapping information.
+The [Integrative Genomics Viewer](https://software.broadinstitute.org/software/igv/) (IGV) provides a useful way to visualize mapping information.
 
 	# start up igv
 	$IGV
@@ -450,7 +450,7 @@ $BCFTOOLS mpileup -f $CICHREF -b $BAMLIST \
 # Index the bcf for rapid access to specific regions with 'bcftools view -r ...'
 bcftools index $DIR/output/calmas_allsites.bcf.gz
 ```
-The VCF is in compressed binary fomat to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
+The VCF is in compressed binary format to save space so we'll have to use bcftools to view it. Let's have a look at the annotations that we
 can use to filter on. The various VCF statistics are defined in the VCF header. You can print just the head with `bcftools view -h $DIR/output/calmas_allsites.bcf.gz`.
 
 	$BCFTOOLS view $DIR/output/calmas_allsites.bcf.gz | less -S
@@ -577,7 +577,7 @@ If we want to use these sites in ANGSD (tomorrow), we need to index them
 $ANGSD sites index $DIR/output/qc_sites.pos
 ```
 
-What pecentage of sites was removed (discounting those with entirely missing data)?
+What percentage of sites was removed (discounting those with entirely missing data)?
 
 <details>
 
@@ -602,7 +602,7 @@ due to the genotyping uncertainty and differences in depth become less apparent.
 
 Here we'll use [ngsParalog](https://github.com/tplinderoth/ngsParalog) to detect regions of confounded mapping
 (which could be due to things like duplications). This method is effective even in low-depth scenarios when population-level data is available. 
-It is also useful for finding misassmbled or erroneously collapsed regions in reference genomes.
+It is also useful for finding misassembled or erroneously collapsed regions in reference genomes.
 
 Non-variable sites are not informative for ngsParalog, so we'll generate a list of unfiltered SNPs in a 256 kb region
 around the *gsdf* duplication that we can analyze.
@@ -655,7 +655,7 @@ mapping (LRT statistic peaks). You can confirm that the data at these sites look
 ```bash
 #!/usr/bin/env Rscript
 
-# plot_duplr.txt <ngsParalog calclR output file> <oufile prefix>
+# plot_duplr.txt <ngsParalog calclR output file> <outfile prefix>
 
 args <- commandArgs(trailingOnly=TRUE)
 
