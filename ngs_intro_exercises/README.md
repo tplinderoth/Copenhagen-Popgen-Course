@@ -10,7 +10,7 @@ The average sequencing depth of samples in this dataset is 14x.
 <br>
 
 We will also use whole genome sequencing data from the African cichlid fish *Astatotilapia calliptera* mapped to a chromosome-level *A. calliptera* assembly. 
-These samples were sequenced to an average depth of 5.7x.
+These samples were sequenced to an average depth of 5.8x.
 
 <br><br>
 
