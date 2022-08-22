@@ -114,17 +114,16 @@ Examples for region specification:
 
 ## Genotype likelihoods
 
-Now lets calculate the genotype likelihoods. ANGSD provides the option to run it's analyses over a region
-(see `$ANGSD -bam` for region specifications) and/or a subset of sites with `sites`. So, let's say we want to
-only calculate genotype likelihoods for the region spanning sites 1 to 600,000 of chr7 at only the quality-controlled
-sites that we generated yesterday (if you don't have the sites file a copy is at /ricco/data/tyler/output/qc_sites.pos).
-Note that some options are on by default (e.g. -remove_bads), but we'll specify them to be explicit. We'll also specify some
-commonly-used filters that are redundant with the QC we performed to make the `-sites` file, since they will demonstrate
-how to these things if you want to be more stringent with your total site depth for example. *A sites files is not required to run ANGSD*. 
-Note that `-setMinDepth` and `-setMaxDepth` require reads to be counted, i.e. `-doCounts 1`. You should look 
-through each of the arguments used a make sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters)
+Now lets calculate genotype likelihoods. ANGSD provides the option to run analyses over a region
+(see `$ANGSD -bam` for region specifications) and/or a subset of sites with `-sites`. So, let's say we want to
+only calculate genotype likelihoods for the quality-controlled sites in the region spanning sites 1 to 600,000 of chromosome 7.
+Note that some options are on by default (e.g. `-remove_bads`), but we'll specify them to be explicit. We'll also specify some
+commonly used filters that are redundant with the QC we performed yesterday to make the `-sites` file in order to demonstrate
+how to carry out these filters within ANGSD. Note: *A sites file is not required to run ANGSD*. 
+Note also that `-setMinDepth` and `-setMaxDepth` require reads to be counted, i.e. `-doCounts 1`. You should look 
+through each of the arguments used and make sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters)
 <br>
-The GLs we calculate will use the SAMtools likelihood model `-GL 1` (see `$ANGSD -GL`) and output them as a text file
+We'll calculate GLs using the SAMtools likelihood model `-GL 1` (see `$ANGSD -GL`) and output them as a text file
 that we can easily examine. This will take ~2.5 minutes.
 
 ```bash
