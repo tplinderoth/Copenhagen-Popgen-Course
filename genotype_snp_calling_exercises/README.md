@@ -161,7 +161,7 @@ ANGSD always dumps a log file with information on how it was run. Check it out:
 	less $DIR/output/calmas_region.arg
 
 Have a look at the GLs. The first two columns refer to the reference sequence (chromososome and position). Then you have 10 likelihoods
-for all possible genotypes in the order AA,AC,AG,AT,CC,CG,CT,GG,GT,TT. This set of 10 likelihoods is repeated sequentially starting from
+for all possible genotypes in the order AA, AC, AG, AT, CC, CG, CT, GG, GT, TT. This set of 10 likelihoods is repeated sequentially starting from
 the left of the file for each individual in the row order of individuals in the BAM file. The values are log-scaled likelihood ratios, 
 scaled by the most likely genotype.
 
