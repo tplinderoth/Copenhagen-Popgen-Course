@@ -142,7 +142,7 @@ We required at least 5 individuals from *each* ecomorph to be covered by at leas
 ANGSD version 0.935-48-gff0c042 `-minIndDepth` is not recognized, but `-minInd` can still be used (the default required individual depth of
 1 will be used).
 
-Looking at the standard output what percentage of the sites provided to ANGSD were actually retained?
+Looking at the standard output, what percentage of the sites provided to ANGSD were actually retained?
 
 <details>
 
