@@ -162,12 +162,12 @@ ANGSD always dumps a log file with information on how it was run. Check it out:
 
 Have a look at the GLs. The first two columns refer to the reference sequence (chromososome and position). Then you have 10 likelihoods
 for all possible genotypes in the order AA, AC, AG, AT, CC, CG, CT, GG, GT, TT. This set of 10 likelihoods is repeated sequentially starting from
-the left of the file for each individual in the row order of individuals in the BAM file. The values are log-scaled likelihood ratios, 
-scaled by the most likely genotype.
+the left of the file for each individual in the row order of individuals in the BAM file. The values are log likelihood ratios 
+scaled to the most likely genotype.
 
 	less -S $DIR/output/calmas_region.glf.gz
 
-We are analyzing 40 individuals, so we should have 402 fields in the glf file. You should confirm this and try to print the likelihoods
+We are analyzing 40 individuals so we should have 402 fields in the glf file. You should confirm this and try to print the likelihoods
 for the individual called CMASS6608007 at position chr7:1005 (each bam file is named by the individual, i.e. <idividual ID>.bam). What is 
 their most likely genotype? If you need help you can click below.
 
@@ -179,15 +179,20 @@ their most likely genotype? If you need help you can click below.
 # Count number of columns and subtract 2 (chromosome and position fields) to get the number of likelihood values
 
 echo "$(($(zcat $DIR/output/calmas_region.glf.gz | head -n1 | wc -w)-2))"
+```
 
-# You should see that indeed there are 400 likelihood values.
-# figure out what line CMASS6608007 is in the bam list.
+You should see that indeed there are 400 likelihood values.
+
+```bash
+# Figure out what line CMASS6608007 is in the bam list.
 
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
 echo "$INDNUM"
+```
 
-# So this individual is at row 25 in the bam list. Now we can extract their likelihoods.
+So this individual is at row 25 in the bam list. Now we can extract their likelihoods.
 
+```bash
 zcat $DIR/output/calmas_region.glf.gz | grep -m 1 $'^chr7\t10005\t' | cut -f 3- | perl -se '$start=($n-1)*10; @arr = split(/\t/,<>); print "@arr[$start .. $start+9]\n"' -- -n=$INDNUM
 ```
 Since the likelihoods have been scaled to the most likely and log-transformed, the most likely genotype will
