@@ -121,7 +121,7 @@ Note that some options are on by default (e.g. `-remove_bads`), but we'll specif
 commonly used filters that are redundant with the QC we performed yesterday to make the `-sites` file in order to demonstrate
 how to carry out these filters within ANGSD. Note: *A sites file is not required to run ANGSD*. 
 Note also that `-setMinDepth` and `-setMaxDepth` require reads to be counted, i.e. `-doCounts 1`. You should look 
-through each of the arguments used and make sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters)
+through each of the arguments used and make sure that you understand them. Information for ANGSD filters is [here](http://www.popgen.dk/angsd/index.php/Filters).
 <br>
 We'll calculate GLs using the SAMtools likelihood model `-GL 1` (see `$ANGSD -GL`) and output them as a text file
 that we can easily examine. This will take ~2.5 minutes.
