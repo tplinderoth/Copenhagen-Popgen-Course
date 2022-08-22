@@ -142,7 +142,7 @@ We required at least 5 individuals from *each* ecomorph to be covered by at leas
 ANGSD version 0.935-48-gff0c042 `-minIndDepth` is not recognized, but `-minInd` can still be used (the default required individual depth of
 1 will be used).
 
-Looking at the standard output, what percentage of the sites provided to ANGSD were actually retained?
+Looking at the standard output. What percentage of the sites provided to ANGSD were actually retained?
 
 <details>
 
@@ -181,11 +181,9 @@ their most likely genotype? If you need help you can click below.
 echo "$(($(zcat $DIR/output/calmas_region.glf.gz | head -n1 | wc -w)-2))"
 ```
 
-You should see that indeed there are 400 likelihood values.
+You should see that indeed there are 400 likelihood values. Now figure out what line CMASS6608007 is in the bam list.
 
 ```bash
-# Figure out what line CMASS6608007 is in the bam list.
-
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
 echo "$INDNUM"
 ```
