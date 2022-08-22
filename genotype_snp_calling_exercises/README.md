@@ -134,10 +134,10 @@ $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_s
 
 The base alignment quality (BAQ) adjustment will recalibrate the base quality scores around INDELS. The `-C` option
 adjusts mapping quality for reads with excessive mismatches. The [samtools](http://www.htslib.org/doc/samtools-mpileup.html)
-documentation setting this to 50 for reads mapped with BWA. `-baq` and `-C` require that you supply the reference genome with `-ref`
+documentation recommends setting this to 50 for reads mapped with BWA. `-baq` and `-C` require that you supply the reference genome with `-ref`
 <br>
 Another useful option can be `-minInd X` in conjunction with `-minIndDepth Y`, which will require at least **X** individuals to be
-covered by at least **Y** (default 1) reads to keep a site. We already applied this type of filter yesterday in a bit more of a sophisted way:
+covered by at least **Y** (default 1) reads to keep a site. We already applied this type of filter yesterday in a bit more detailed way:
 We required at least 5 individuals from *each* ecomorph to be covered by at least 2 reads in order for the site to pass QC. Note that in
 ANGSD version 0.935-48-gff0c042 `-minIndDepth` is not recognized, but `-minInd` can still be used (the default required individual depth of
 1 will be used).
