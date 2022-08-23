@@ -339,11 +339,11 @@ $DIR/output/calmas_region_af_littoral.mafs.gz $DIR/output/calmas_region_af_benth
 The global Dxy printed to the screen states that there are on average ~758 nucleotide differences in 538,384 sites when comparing
 littoral to benthic individuals. This means that there are approximately only 0.0014 pairwise differences on average per site, which 
 is low and so indicates that these ecomorphs are likely quite genetically similar. This is only based on a small region and 
-in practice you'd want to make this inference across the genome. Accordingly, looking at how Dxy is distributed across the genome, 
-i.e. where the ecomorphs appear to be particularly divergent or similar could provide evidence for selection or introgression,
+in practice you'd want to make this inference across the genome. Looking at how Dxy is distributed across the genome, 
+i.e. where the ecomorphs appear to be particularly divergent or similar, could provide evidence for selection or introgression,
 respectively.
 
-You can see what Dxy looked like in 10 kb windows when sliding along our small example region in increments of 5 kb. Typically
+You can see what Dxy looks like in 10 kb windows when sliding along our small example region in increments of 5 kb. Typically
 it can be useful to visual these sliding window analyses as Manhattan plots.
 
 	cat $DIR/output/calmas_ecomorph_dxy.txt
@@ -356,13 +356,16 @@ minor allele frequency (MAF) is zero (the null) to the likelihood of the estimat
 is distributed according to a chi-square(1 d.f.), and so we can calculate a p-value for whether the estimated MAF is statistically 
 different from zero, in which case the site is a SNP.
 <br>
-You can call SNPs based on a particular p-value cutoff using `SNP_pval`, so that's what we'll do for the first 1 MB on chromosome 7
+You can call SNPs based on a particular p-value cutoff using `-SNP_pval`, so that's what we'll do for the first 1 MB of chromosome 7.
 
 ```bash
 $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
 -doMajorMinor 1 -doMaf 1 -SNP_pval 1e-6 -skipTriallelic 1 -out $DIR/output/calmas_region_snpcall
 ```
-Look at the file `less $DIR/output/calmas_region_snpcall.mafs.gz`, which contains only sites called as variable.
+Look at the maf file. It contains only sites called as variable.
+```bash
+less $DIR/output/calmas_region_snpcall.mafs.gz
+```
 
 The columns of this maf file are the same as before, except now there is an additional column 'pK-EM', which is the p-value corresponding
 to the likelihood ratio test of whether a given site is variable. One useful option to be aware of when calling SNPs (or working with data 
