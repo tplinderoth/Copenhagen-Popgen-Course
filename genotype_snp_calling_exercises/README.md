@@ -616,9 +616,10 @@ $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_s
 -GL 1 -doMajorMinor 1 -doMaf -1 -SNP_pval 1e-6 -skipTriallelic 1 -doPost 1 -doGeno 32 -out $DIR/output/calmas_region_genocall_binary
 ```
 Second, we estimate a genetic covariance matrix among all individuals based on the genotype posterior probabilities with ngsCovar.
+```bash
+$DATDIR/prog/bin/ngsCovar
+```
 
-	$DATDIR/prog/bin/ngsCovar
-	
 	Input:
 	-probfile: file with genotype posterior probabilities [required]
 	-outfile: name of output file [required], currently it is a text file, tab separated with n*n cells
