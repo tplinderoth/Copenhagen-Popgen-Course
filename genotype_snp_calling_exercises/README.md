@@ -508,7 +508,10 @@ $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_s
 The first two columns of the output are the chromosome and position. The following columns list the the posterior probabilites
 for the major/major, major/minor, and minor/minor for each individual in the same order as they appeared from the top of the bam list.
 
-Take a look at the ouput `less -S $DIR/output/calmas_region_genocall.geno.gz`
+Take a look at the ouput.
+```bash
+less -S $DIR/output/calmas_region_genocall.geno.gz
+```
 
 We are analyzing 40 individuals, so we should have 122 fields in the geno file. You should confirm this and try to print the genotype posterior
 probabilities for the individual called CMASS6608007 at position chr7:136054. What is the most probable genotype call? You should also ensure 
