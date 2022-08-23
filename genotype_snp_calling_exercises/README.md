@@ -538,13 +538,13 @@ So this individual is at row 25 in the bam list. Now we can extract their genoty
 ```bash
 zcat $DIR/output/calmas_region_genocall.geno.gz | grep -m 1 $'^chr7\t136054\t' | cut -f 3- | perl -se '$start=($n-1)*3; @arr = split(/\t/,<>); print "@arr[$start .. $start+2]\n"' -- -n=$INDNUM
 ```
-The first genotype configuration has the maximum posterior probability (= 0.994656), so the most probably gentoype is Major/Major.
+The first genotype configuration has the maximum posterior probability (= 0.994656), so the most probable gentoype is Major/Major.
 
 The genotypes do indeed sum to 1 (0.994656 + 0.005344 + 0 = 1).
 
 </details>
 
-What do you think genotype probabilities of `0.333333   0.333333   0.333333` mean for an individual?
+What do you think genotype probabilities for an individual of `0.333333   0.333333   0.333333` mean?
 
 We can also perform hard genotype calling using `-doGeno 2` or `-doGeno 4`, which we'll do now. Let's use `-doGeno 2` which represents 
 called genotypes as the number of minor alleles: 0 = Major/Major, 1=Major/Minor, 2=Minor/Minor, -1 = missinge genotype. The genotype 
@@ -553,10 +553,10 @@ allele. Printing argument values can be summed to combine outputs. `-doGeno 1` p
 of 1 to `-doGeno 2`, we have `-doGeno 3`, which should give us the output we want.
 <br>
 It's often a good idea when hard-calling to specify a minimum posterior probability
-for calling, which is achieved with the `-postCutoff` option. `-postCutoff X` which not call a genotype if the maximum posterior probability
-is < **X**. We'll use a minimum posterior cutoff of 0.90.
+for calling, which is achieved with the `-postCutoff` option. `-postCutoff X` will not call a genotype if the maximum posterior probability
+is < **X**. We'll use a minimum posterior probability cutoff of 0.90.
 <br>
-So now let's hard-call genotypes.
+Now let's hard-call genotypes.
 
 ```bash
 $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
