@@ -279,7 +279,7 @@ All of this was necessary because the *actual* major, i.e. the most frequent all
 We need a maf file for each ecomorph, so let's start by generating this for the littoral morph. We could simply split the glf file
 containing all individuals into a file with only littoral GLs and another with only benthic GLs. Alternatively, we can calculate
 the allele frequencies using two different bam lists as input, which is what we'll do here. The bam list for littoral individuals is
-/ricco/data/tyler/littoral_bams.list and the bam list for benthics is /ricco/data/tyler/benthic_bams.list.
+`/ricco/data/tyler/littoral_bams.list` and the bam list for benthics is `/ricco/data/tyler/benthic_bams.list`.
 
 ```bash
 # estimate littoral morph allele frequencies (-ref is required for -doMajorMinor 4)
