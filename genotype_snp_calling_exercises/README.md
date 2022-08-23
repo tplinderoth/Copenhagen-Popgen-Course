@@ -369,7 +369,7 @@ less $DIR/output/calmas_region_snpcall.mafs.gz
 
 The columns of this maf file are the same as before, except now there is an additional column 'pK-EM', which is the p-value corresponding
 to the likelihood ratio test of whether a given site is variable. One useful option to be aware of when calling SNPs (or working with data 
-involving variable sites in general) is `-minMaf X` (which requires `-doMaf` when used), which filters out any sites with a MAF <**X** from
+involving variable sites in general) is `-minMaf X` (requires `-doMaf` when used), which filters out any sites with a MAF < **X** from
 the analyses. 
 
 Compare the number of called SNPs and distribution of allele frequencies to the case when you use a less stringent p-value cutoff
@@ -394,10 +394,12 @@ echo "$(($(zcat $DIR/output/calmas_region_snpcall_liberal.mafs.gz | wc -l)-1))"
 Plot the MAF distribution
 
 ```bash
-$DATDIR/scripts/plotAFDist.R $DIR/output/calmas_region_snpcall.mafs.gz $DIR/output/calmas_region_snpcall_liberal.mafs.gz $DIR/output/snp_call_comparison
-
 # Ignore the warnings about closing the unsed connections.
 
+$DATDIR/scripts/plotAFDist.R $DIR/output/calmas_region_snpcall.mafs.gz $DIR/output/calmas_region_snpcall_liberal.mafs.gz $DIR/output/snp_call_comparison
+```
+
+```bash
 # View the plot
 
 evince $DIR/output/snp_call_comparison.pdf
