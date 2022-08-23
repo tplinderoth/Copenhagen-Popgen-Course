@@ -563,7 +563,7 @@ $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_s
 -remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 \
 -GL 1 -doMajorMinor 1 -doMaf -1 -SNP_pval 1e-6 -skipTriallelic 1 -doPost 1 -doGeno 3 -postCutoff 0.90 -out $DIR/output/calmas_region_genocall_hard
 ```
-The output now has columns (1) chromosome, (2) position, (3) major allele, (4) minor allele, (5..number_individuals) genotype calls for every
+The output now has columns (1) chromosome, (2) position, (3) major allele, (4) minor allele, (5..number individuals) genotype calls for every
 individual.
 
 Take a look at the ouput `less -S $DIR/output/calmas_region_genocall_hard.geno.gz`
