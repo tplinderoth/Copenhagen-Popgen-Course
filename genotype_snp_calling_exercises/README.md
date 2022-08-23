@@ -601,10 +601,10 @@ The called genotype is '0', meaning that this individuals is most probably 'CC'.
 ## PCA
 
 Let's do some quick biological inference now that you know how to call genotypes. We'll use ANGSD to calculate genotype posterior probabilities and
-output these to a binary file `-doGeno 32`, which we'll use an input to the progra ngsCovar in order to calculate a genetic covariance matrix 
+output these to a binary file with `-doGeno 32`, which we'll use as input to the program ngsCovar in order to calculate a genetic covariance matrix 
 for all of the Lake Masoko *A. calliptera* individuals. ngsCovar is part of the [ngsTools](https://github.com/mfumagalli/ngsTools) software toolbox, 
-which is a set of programs for analyzing genetic data and particularly suited to working with ANGSD outputs. This covariance matrix will allow us to 
-perfrom a Principle Component Analysis (PCA) using our genetic data. We are not hard-calling gentoypes and so can better avoid snow-balling error 
+which is a set of programs for analyzing NGS genetic data and is particularly suited to working with ANGSD outputs. The covariance matrix enables us to 
+perform a Principle Component Analysis (PCA) of genome-wide genetic variation. We are not hard-calling genotypes and so can better avoid snow-balling error 
 from incorrectly called genotypes. There are [other](http://www.popgen.dk/angsd/index.php/PCA) ways of performing PCA with ANGSD, so this is just a 
 demonstration of one approach.
 <br>
@@ -640,15 +640,18 @@ in order for ngsCovar to read it.
 ```bash
 # Count sites in geno file
 NGENOSITES=$(($(zcat $DIR/output/calmas_region_genocall.geno.gz | wc -l)-1))
-
+```
+```bash
 # Unzip geno file
 gunzip $DIR/output/calmas_region_genocall_binary.geno.gz
+```
 
-# Calculate covariance matrix
+Calculate the covariance matrix.
+```bash
 $DATDIR/prog/bin/ngsCovar -probfile $DIR/output/calmas_region_genocall_binary.geno -nind 40 -nsites $NGENOSITES -norm 0 -call 0 -outfile $DIR/output/calmas.covar
-
-# You can check this 40 x 40 covariance matrix out if you want. The order of individuals
-# in the matrix corresponds to their order in the geno file.
+```
+You can check this 40 x 40 covariance matrix out if you want. The order of individuals in the matrix corresponds to their order in the geno file.
+```bash
 less -S $DIR/output/calmas.covar
 ```
 Lastly, we'll perform eigen decomposition on this covariance matrix in R and plot the PCA.
@@ -673,11 +676,11 @@ Generate another PCA from this new covariance matrix
 
 ```bash
 # Plot
-
 $DATDIR/scripts/plotPCA.R $DIR/output/calmas_common.covar $DATDIR/calmas_meta_sub.txt $DIR/output/calmas_common_pca
+```
 
-# Examine the PCA
-
+Examine the PCA
+```bash
 evince $DIR/output/calmas_common_pca.pdf
 ```
 
@@ -702,7 +705,7 @@ individuals from the Masoko sex determination study with morph information).
 
 </details>
 
-What does PC1 appear to be describing in biological terms? How robust is this interpretation to differences in the amount of data used and how it is treated?
+What does PC1 appear to be describing in biological terms?
 
 ## Site frequency spectrum
 
