@@ -685,7 +685,7 @@ Examine the PCA
 evince $DIR/output/calmas_common_pca.pdf
 ```
 
-Click below to view the PCA plots you've just generated along with one run using all SNPs across the genome with MAF >5% (the last plot includes all  
+Click below to view the PCA plots you've just generated along with one run using all SNPs across the genome with MAF >5% (the last plot includes all 
 individuals from the Masoko sex determination study with morph information).
 
 <details>
