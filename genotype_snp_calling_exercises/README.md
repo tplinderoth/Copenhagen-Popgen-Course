@@ -168,7 +168,7 @@ scaled to the most likely genotype.
 	less -S $DIR/output/calmas_region.glf.gz
 
 We are analyzing 40 individuals so we should have 402 fields in the glf file. You should confirm this and try to print the likelihoods
-for the individual called CMASS6608007 at position chr7:1005 (each bam file is named by the individual, i.e. <idividual ID>.bam). What is 
+for the individual called CMASS6608007 at position chr7:10005 (each bam file is named by the individual, i.e. <idividual ID>.bam). What is 
 their most likely genotype? If you need help you can click below.
 
 <details>
