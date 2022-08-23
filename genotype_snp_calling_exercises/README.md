@@ -531,7 +531,7 @@ You should see that indeed there are 120 posterior probability values. Figure ou
 ```bash
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
 echo "$INDNUM"
-```bash
+```
 
 So this individual is at row 25 in the bam list. Now we can extract their genotype posteriors.
 
