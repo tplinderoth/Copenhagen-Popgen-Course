@@ -702,8 +702,8 @@ have by definition). The "folded" term spawns from these frequency equivalence c
 middle (50% allele frequency class) to get the folded SFS.
 
 To calculate the SFS we first estimate the likelihood of every possible allele frequency for every site with `-doSaf 1`, which assumes 
-a HWE relationship between the frequencies of genotypes and alleles. For other `-doSaf` models see `$ANGSD -doSaf` or [here](http://www.popgen.dk/angsd/index.php/SFS_Estimation).
-. We do not know what the ancestral alleles are so will calculate the folded SFS by supplying the reference FASTA to `-anc` in place of an actual
+a HWE relationship between the frequencies of genotypes and alleles. For other `-doSaf` models see `$ANGSD -doSaf` or [here](http://www.popgen.dk/angsd/index.php/SFS_Estimation). 
+We do not know what the ancestral alleles are so will calculate the folded SFS by supplying the reference FASTA to `-anc` in place of an actual
 ancetral state FASTA in conjunction with specifying `-fold 1` at the realSFS stage.
 
 ```bash
