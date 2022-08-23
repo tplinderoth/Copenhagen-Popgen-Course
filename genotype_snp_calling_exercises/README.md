@@ -380,7 +380,7 @@ $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
 -doMajorMinor 1 -doMaf 1 -SNP_pval 0.01 -skipTriallelic 1 -out $DIR/output/calmas_region_snpcall_liberal
 ```
 
-Count the number of SNPs in the two maf files of SNPs
+Count the number of SNPs in the two maf files
 
 ``` bash
 # p-value cutoff of 1e-6
@@ -394,7 +394,7 @@ echo "$(($(zcat $DIR/output/calmas_region_snpcall_liberal.mafs.gz | wc -l)-1))"
 Plot the MAF distribution
 
 ```bash
-# Ignore the warnings about closing the unsed connections.
+# Ignore the warnings about closing the unused connections.
 
 $DATDIR/scripts/plotAFDist.R $DIR/output/calmas_region_snpcall.mafs.gz $DIR/output/calmas_region_snpcall_liberal.mafs.gz $DIR/output/snp_call_comparison
 ```
