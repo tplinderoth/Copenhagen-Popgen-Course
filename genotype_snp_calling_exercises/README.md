@@ -898,9 +898,9 @@ if (plottype == "bar") {
 
 </details>
 
-Lastly, we can use the global SFS estimate as a prior on the probability of sampling a site belonging to a given allele frequency class.
+Lastly, we can use the global SFS estimate as a prior for the probability of sampling a site belonging to a given allele frequency class.
 The global SFS prior, along with the per site allele frequency likelihoods from `-doSaf` can be used to estimate the posterior
-probability distribution over all of the allele frequencies at particular site. Try it.
+probability distribution over all possible allele frequencies at a particular site. Try it.
 
 ```bash
 $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai -doSaf 1 -pest $DIR/output/calmas_region_folded.sfs -anc $CICHREF -out $DIR/output/calmas_region_folded_post
