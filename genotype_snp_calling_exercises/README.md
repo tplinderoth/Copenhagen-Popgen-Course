@@ -695,16 +695,16 @@ When ancestral alleles are known, one can "polarize" SNPs in terms of which alle
 ancestral FASTA sequence to ANGSD with the `-anc` argument, which it will use to polarize SNPs. This allows for calculating the 
 unfolded SFS, which considers allele frequency classes ranging from 1/2N to (2N-1)/2N, where N is the diploid sample size. In many 
 cases the ancestral allele may not be known, in which case we are limited to classifying alleles as major (more frequent) or 
-minor (rarer), and calculate the "folded" SFS. The folded SFS considers only allele frequency classes of 1/2N to 1/2. In the folded 
+minor (rarer), and calculate the "folded" SFS. The folded SFS considers only allele frequency classes of 1/2N to 0.5. In the folded 
 case a site with an allele frequency of (2N-1)/2N is in an equivalent class as a 1/2N site, a (2N-2)/2N site is equivalent to a 2/2N 
-site, a (2N-3)/2N site is equivalent to a 3/2N site, up to a class of 1/2 allele frequency (the highest frequency a minor allele can 
+site, a (2N-3)/2N site is equivalent to a 3/2N site, up to a class of 0.5 allele frequency (the highest frequency a minor allele can 
 have by definition). The "folded" term spawns from these frequency equivalence classes since an unfolded SFS can be "folded" at the 
 middle (50% allele frequency class) to get the folded SFS.
 
 To calculate the SFS we first estimate the likelihood of every possible allele frequency for every site with `-doSaf 1`, which assumes 
-a HWE relationship between genotype and allele frequencies. For other `-doSaf` models see `$ANGSD -doSaf` or [here](http://www.popgen.dk/angsd/index.php/SFS_Estimation).
+a HWE relationship between the frequencies of genotypes and alleles. For other `-doSaf` models see `$ANGSD -doSaf` or [here](http://www.popgen.dk/angsd/index.php/SFS_Estimation).
 . We do not know what the ancestral alleles are so will calculate the folded SFS by supplying the reference FASTA to `-anc` in place of an actual
-ancetral state FASTA in conjunction with specifying `-fold 1`
+ancetral state FASTA in conjunction with specifying `-fold 1` at the realSFS stage.
 
 ```bash
 $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
