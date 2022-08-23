@@ -492,10 +492,10 @@ So now let's estimate some genotype posterior probilities. To invoke genotype ca
 		NB geno_minDepth requires -doCounts
 		NB geno_maxDepth requires -doCounts
 
-We'll calculate genotype posterior probabilities using a HWE prior, `-doPost 1` given the allele frequencies estimated with `-doMaf 1`
-and then output the posterior probabilities for the major/major, major/minor, minor/minor genotypes for each individual with `doGeno 8`.
-We'll limit our analysis to SNP position only (`SNP_pval 1e-6`). Note that while we need to estimate allele frequencies, we already 
-have a file containing them, which we don't need to write again, so we can suppress writing another maf file by making the value to 
+We'll calculate genotype posterior probabilities using a HWE prior (`-doPost 1`) based on the allele frequencies estimated with `-doMaf 1`
+and then output the posterior probabilities for the major/major, major/minor, minor/minor genotypes for each individual with `-doGeno 8`.
+We'll limit our analysis to SNPs only (`SNP_pval 1e-6`). Note that while we need to estimate allele frequencies we already 
+have a file containing them, which we don't need to write again, so we can suppress writing another maf file by making the value for 
 `-doMaf` negative. Note that this version of ANGSD is specifying that we *have* to specify `-GL`, so we'll perform the calling using the
 BAMS as input. We'll use many of the same quality controls as last time.
 
