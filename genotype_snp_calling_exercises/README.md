@@ -665,27 +665,10 @@ Have a look at the PCA.
 ```bash
 evince $DIR/output/calmas_pca.pdf
 ```
-Now try estimating a new covariance matrix with only common variants, which we will call any SNPs with an allele frequency > 25%. On actual
-data you probably wouldn't set a minumum MAF this high since it would remove a lot of data, rather around 5%, but we'll be extreme here 
-for demonstration purposes.
 
-```bash
-$DATDIR/prog/bin/ngsCovar -minmaf 0.25 -probfile $DIR/output/calmas_region_genocall_binary.geno -nind 40 -nsites $NGENOSITES -norm 0 -call 0 -outfile $DIR/output/calmas_common.covar
-```
+You can restrict ngsCovar's calculations to SNPs with MAF above a desired cutoff by specifying `-minmaf`.
 
-Generate another PCA from this new covariance matrix
-
-```bash
-# Plot
-$DATDIR/scripts/plotPCA.R $DIR/output/calmas_common.covar $DATDIR/calmas_meta_sub.txt $DIR/output/calmas_common_pca
-```
-
-Examine the PCA
-```bash
-evince $DIR/output/calmas_common_pca.pdf
-```
-
-Click below to view the PCA plots you've just generated along with one run using all SNPs across the genome with MAF >5% (the last plot includes all 
+Click below to view the PCA plot that you've just generated along with one run using all SNPs across the genome with MAF >5% (the last plot includes all 
 individuals from the Masoko sex determination study with morph information).
 
 <details>
@@ -695,10 +678,6 @@ individuals from the Masoko sex determination study with morph information).
 40 individuals chr7:1-60000 all SNPs
 <br>
 ![calmas_region_PCA_allsnps](./outputs/calmas_pca.png)
-<br><br>
-40 individuals chr7:1-60000 SNPs > 25% MAF
-<br>
-![calmas_region_PCA_common_variants](./outputs/calmas_common_variants_pca.png)
 <br><br>
 300 individuals, full genome, SNPs > 5% MAF
 <br>
