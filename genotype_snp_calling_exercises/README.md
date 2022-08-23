@@ -513,7 +513,7 @@ Take a look at the ouput.
 less -S $DIR/output/calmas_region_genocall.geno.gz
 ```
 
-We are analyzing 40 individuals, so we should have 122 fields in the geno file. You should confirm this and try to print the genotype posterior
+We are analyzing 40 individuals so we should have 122 fields in the geno file. You should confirm this and try to print the genotype posterior
 probabilities for the individual called CMASS6608007 at position chr7:136054. What is the most probable genotype call? You should also ensure 
 that the probabilities sum to 1.
 
@@ -521,19 +521,21 @@ that the probabilities sum to 1.
 
 <summary> click for help extracting genotype posterior probability info </summary>
 
+Count the number of columns and subtract 2 (chromosome and position fields) to get the number of posterior probability values.
 ```bash
-# Count number of columns and subtract 2 (chromosome and position fields) to get the number of posterior probability values
-
 echo "$(($(zcat $DIR/output/calmas_region_genocall.geno.gz | head -n1 | wc -w)-2))"
+```
 
-# You should see that indeed there are 120 posterior probability values.
-# figure out what line CMASS6608007 is in the bam list.
+You should see that indeed there are 120 posterior probability values. Figure out what line CMASS6608007 is in the bam list.
 
+```bash
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
 echo "$INDNUM"
+```bash
 
-# So this individual is at row 25 in the bam list. Now we can extract their genotype posteriors.
+So this individual is at row 25 in the bam list. Now we can extract their genotype posteriors.
 
+```bash
 zcat $DIR/output/calmas_region_genocall.geno.gz | grep -m 1 $'^chr7\t136054\t' | cut -f 3- | perl -se '$start=($n-1)*3; @arr = split(/\t/,<>); print "@arr[$start .. $start+2]\n"' -- -n=$INDNUM
 ```
 The first genotype configuration has the maximum posterior probability (= 0.994656), so the most probably gentoype is Major/Major.
