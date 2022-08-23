@@ -181,7 +181,7 @@ their most likely genotype? If you need help you can click below.
 echo "$(($(zcat $DIR/output/calmas_region.glf.gz | head -n1 | wc -w)-2))"
 ```
 
-You should see that indeed there are 400 likelihood values. Now figure out what line CMASS6608007 is in the bam list.
+You should see that indeed there are 400 likelihood values. Now figure out what line CMASS6608007 is at in the bam list.
 
 ```bash
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
@@ -202,7 +202,7 @@ You could confirm this by looking at this site in the bcf file that you generate
 bcftools view -H -s CMASS6608007 -r chr7:10005 ~/ngs_intro/output/calmas_allsites.bcf.gz
 ```
 
-Yep, it looks like this site is monomorphic with the reference a 'G' and this individual has data (your output should look like):
+Yep, it looks like this site is monomorphic with a 'G' reference allele and this individual has data (your output should look like):
 
 	chr7	10005	.	G	.	5018.12	.	DP=173;AD=173;SCR=21;MQSBZ=0.472176;FS=0;MQ0F=0;AN=2;DP4=96,77,0,0;MQ=57;NS=39	GT:DP:AD:SCR:QS	0/0:2:2:0:64
 
@@ -210,7 +210,7 @@ Yep, it looks like this site is monomorphic with the reference a 'G' and this in
 
 ## Allele frequency estimation
 
-Now will estimate allele frequencies using the GLs we just calculated as input. Note that you can use the bams as input again,
+Now you will estimate allele frequencies using the GLs we just calculated as input. Note that you can use the bams as input again 
 but you'd have to recalculate the likelihoods (with `-GL` as before), which is redundant. If we do supply GLs as input we also
 need to provide the number of individuals in the GL file, `-nInd`, and the reference index file, `-fai`.
 
@@ -238,7 +238,7 @@ It's also useful to know how ANGSD can identify major and minor alleles, `$ANGSD
 
 
 We'll use `-doMajorMinor 1` to have ANGSD figure out what the major and minor alleles are from the GLs and then, based on these 
-identified, alleles calculate their allele frequencies with `-doMaf 1`. If we wanted to account for more uncertainty in the 
+identified alleles, calculate their frequencies with `-doMaf 1`. If we wanted to account for more uncertainty in the 
 identificaton of what the minor allele is we could use `-doMaf 2`. This latter approach would take a bit longer since there would
 be three minor alleles to consider instead of just one. We'll also skip any sites that appear to have more than 2 alleles with
 `-skipTriallelic 1` (though we should have filtered these out already with our qc_sites.pos file).
@@ -270,13 +270,13 @@ Here's the first 5 sites:
 Now that you know how to extract allele frequencies, one interesting thing we could do is estimate the absolute divergence 
 between the two ecomorphs of *Astatotilapia calliptera* in your data. Specifcally, we can use the allele frequencies
 in the respective ecomorphs to calculate Dxy, which is the average number of pairwise nucleotide differences between them.
-It's important for this calculation that for each site we estimate the allele frequency for the *same* allele in both ecomorphs.
-In order to do this we can set which allele is the major allele using `-doMajorMinor 4`, which will assume that the reference allele
-is major (which may not be true, but that's okay because we are just wanting to differentiate between alleles). Then for a biallelic 
-site, the "minor" (or other) allele will be the same in both ecomorphs. Note that the minor allele is inferred from the GLs. We need 
-to do this because the *actual* major, i.e. the most frequent allele, in the ecomorphs could be different. So, let's get started...
+It's important for this calculation that for each site we estimate the frequency for the *same* allele in both ecomorphs.
+In order to do this we can set the major allele to the reference allele with `-doMajorMinor 4` (which may not be true, but that's okay 
+in this case because we are just wanting to differentiate between alleles). Then for a biallelic 
+site the "minor" (or other) allele will be the same in both ecomorphs. Note that the minor allele is inferred from the GLs. 
+All of this was necessary because the *actual* major, i.e. the most frequent allele, could be different between ecomorphs. So, let's get started...
 <br><br>
-We need a maf file for each ecomorph, so let's start by generating this for the littoral morphs. We could simply split the glf file
+We need a maf file for each ecomorph, so let's start by generating this for the littoral morph. We could simply split the glf file
 containing all individuals into a file with only littoral GLs and another with only benthic GLs. Alternatively, we can calculate
 the allele frequencies using two different bam lists as input, which is what we'll do here. The bam list for littoral individuals is
 /ricco/data/tyler/littoral_bams.list and the bam list for benthics is /ricco/data/tyler/benthic_bams.list.
@@ -287,7 +287,8 @@ the allele frequencies using two different bam lists as input, which is what we'
 $ANGSD -b $DATDIR/littoral_bams.list -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
 -remove_bads 1 -uniqueOnly 1 -only_proper_pairs 1 -minQ 20 -minMapQ 20 -baq 1 -C 50 -skipTriallelic 1 \
 -GL 1 -doMajorMinor 4 -doMaf 1 -out $DIR/output/calmas_region_af_littoral
-
+```
+```bash
 # estimate benthic morph allele frequencies
 
 $ANGSD -b $DATDIR/benthic_bams.list -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
