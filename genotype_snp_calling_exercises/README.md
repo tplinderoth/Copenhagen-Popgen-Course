@@ -820,7 +820,7 @@ evince $DIR/output/calmas_region_folded.pdf
 This SFS looks very strange because our example region is quite short and there is high sampling variance with few SNPs. 
 The folded SFS for all of chromsome 7 (below) has been generated for you in the same way, except no quality controls were applied, but 
 still it looks much more sane. Try to compare this observed SFS to the expected SFS from a neutrally evolving, constant-size
-population. In this case the number of sites belonging to each frequency category is proportional to 1/x, where x is the allele frequency. 
+population. In the expected case the number of sites belonging to each frequency category is proportional to 1/x, where x is the allele frequency. 
 Try to think of how you can compare the observed to the expected SFS, and then you can click below for help.
 <br>
 Folded SFS for all of chromosome 7:
