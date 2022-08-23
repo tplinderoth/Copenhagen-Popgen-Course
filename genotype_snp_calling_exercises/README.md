@@ -435,7 +435,7 @@ invisible(dev.off())
 ```
 </details>
 
-You can click below to view what you should have seen
+You can click below to view what you should have seen.
 
 <details>
 
@@ -454,17 +454,17 @@ Describe the difference between the two SNP p-value cutoffs.
 ## Genotype posterior probabilities and calling
 
 As you looked at the pileups of the low coverage data yesterday, it might have occured to you that if you had some idea of what
-the allele frequencies were in the population, you would probably have at least a bit more confidence in what the genotype would be.
+the allele frequencies were in the population, you would probably have more confidence in what the genotypes might be.
 For example, if the pileup information for an individual was `6  C,,...  5G/BGB`, you'd think that it would help quite a bit in deciding
 how real that 'C' alternate allele is (since it could very well be an error) if you knew that that allele existed in the population,
-and even better if you knew it's frequency. If you knew the frequency of the allele in the population then you could use a population
+and even better if you knew its frequency. If you knew the frequency of the allele in the population then you could use a population
 genetic model, e.g. Hardy-Weinberg, to figure out the probability of sampling a heterozygote. This is essentially exactly what ANGSD
 does to call genotypes.
 <br>
-You now know how to estimate genotype likelihoods from the sequencing data, and you also know how to estimate allele frequencies, which
-gives you *prior* knowledge on the probability of sampling a particular allele. Now we have all of the components of Bayes' theorem
-(i.e. genotype likelihoods, and the genotype probabilities given an estimate of the allele frequencies) to calculate genotype posterior
-probabilities. By incorporating prior knowledge of allele frequencies we can increase the accuracy of genotype calling.
+You now know how to estimate genotype likelihoods from sequencing data, and you also know how to estimate allele frequencies, which
+gives you *prior* knowledge on the probability of sampling a particular allele. Now we have all of the components to calculate genotype posterior
+probabilities (genotype likelihoods and the genotype probabilities given an estimate of the allele frequencies). 
+By incorporating prior knowledge of allele frequencies we can increase the accuracy of genotype calling.
 <br>
 So now let's estimate some genotype posterior probilities. To invoke genotype calling you use `-doPost` and `-doGeno`.
 
