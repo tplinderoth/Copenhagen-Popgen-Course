@@ -608,7 +608,7 @@ perform a Principle Component Analysis (PCA) of genome-wide genetic variation. W
 from incorrectly called genotypes. There are [other](http://www.popgen.dk/angsd/index.php/PCA) ways of performing PCA with ANGSD, so this is just a 
 demonstration of one approach.
 <br><br>
-First, we calculate genotype posteriors in binary format.
+First, we calculate genotype posterior probabilities in binary format.
 
 ```bash
 $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_sites.pos \
