@@ -566,28 +566,32 @@ $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_s
 The output now has columns (1) chromosome, (2) position, (3) major allele, (4) minor allele, (5..number individuals) genotype calls for every
 individual.
 
-Take a look at the ouput `less -S $DIR/output/calmas_region_genocall_hard.geno.gz`
+Take a look at the ouput.
+```bash
+less -S $DIR/output/calmas_region_genocall_hard.geno.gz
+```
 
-We are analyzing 40 individuals, so we should have 44 fields in the geno file. You should confirm this. What is the genotype call for 
+We are analyzing 40 individuals so we should have 44 fields in the geno file. You should confirm this. What is the genotype call for 
 CMASS6608007 at position chr7:136054?
 
 <details>
 
 <summary> click for help extracting hard-call info </summary>
 
+Count number of columns and subtract 4 (chromosome, position, major allele, minor allele fields) to get the number genotype calls.
+
 ```bash
-# Count number of columns and subtract 4 (chromosome, position, major allele, minor allele fields) to get the number genotype calls.
-
 echo "$(($(zcat $DIR/output/calmas_region_genocall_hard.geno.gz | head -n1 | wc -w)-4))"
+```
+You should see that indeed there are 40 genotype calls. Figure out what line CMASS6608007 is at in the bam list.
 
-# You should see that indeed there are 40 genotype calls.
-# figure out what line CMASS6608007 is in the bam list.
-
+```bash
 INDNUM=$(grep -n "CMASS6608007.bam" $BAMLIST | cut -f1 -d':')
 echo "$INDNUM"
+```
+So this individual is at row 25 in the bam list. Now we can extract their genotype posteriors.
 
-# So this individual is at row 25 in the bam list. Now we can extract their genotype posteriors.
-
+```bash
 zcat $DIR/output/calmas_region_genocall_hard.geno.gz | grep -m 1 $'^chr7\t136054\t' | perl -se '@arr = split(/\t/,<>); print "$arr[$n+3]\n"' -- -n=$INDNUM
 ```
 The called genotype is '0', meaning that this individuals is most probably 'CC'.
