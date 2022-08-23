@@ -767,7 +767,7 @@ estimate the global, genome-wide SFS.
 ```bash
 $DATDIR/prog/bin/realSFS -fold 1 $DIR/output/calmas_region_folded.saf.idx > $DIR/output/calmas_region_folded.sfs
 ```
-The output is a text file of the expected number of sites in each minor allele frequency class 0, 1/2N, ..., N. realSFS always writes 2N+1 values, 
+The output is a text file of the expected number of sites in each minor allele frequency class 0, 1/2N, ..., N. realSFS always writes 2N+1 values 
 but since we folded the spectrum any counts beyond frequency N/2N are zero and can be ignored. 
 
 ```bash
