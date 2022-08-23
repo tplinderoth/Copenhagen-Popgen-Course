@@ -296,8 +296,8 @@ $ANGSD -b $DATDIR/benthic_bams.list -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_
 -GL 1 -doMajorMinor 4 -doMaf 1 -out $DIR/output/calmas_region_af_benthic
 ```
 Take a look at these new maf files, you'll notice that there is an additional column specifying the reference allele since we included 
-`-ref` in these runs. The major allele should match the ref allele since we used `doMajorMinor 4`.
-<br>
+`-ref` in these runs. The major allele should match the ref allele since we used `-doMajorMinor 4`.
+<br><br>
 Now we'll use these maf files as input to a program, dxyWindow, in order to calculate Dxy in XX kb windows. dxyWindow belongs to a 
 suite of tools (https://github.com/tplinderoth/PopGenomicsTools) that can be used to perform various population genetic analyses.
 You can enter `$DATDIR/prog/bin/dxyWindow` to see some help for the program:
