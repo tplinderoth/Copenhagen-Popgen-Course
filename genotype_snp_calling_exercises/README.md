@@ -1,7 +1,7 @@
 Estimation of allele frequencies, SNP calling, and genotype calling from NGS data
 =================================================================================
 
-For these excercises you will use whole genome sequencing data from 40 individuals of *Astatotilapia calliptera* from the crater 
+For these exercises you will use whole genome sequencing data from 40 individuals of *Astatotilapia calliptera* from the crater 
 Lake Masoko in Tanzania. Twenty of these samples represent a "littoral" ecomorph and the other 20 a 
 "benthic" ecomorph. These individuals have been sequenced to a mean depth of 5.8x. See `/ricco/data/tyler/calmas_meta_sub.txt` for 
 metadata on these samples.
@@ -37,11 +37,11 @@ BAMDIR=$DATDIR/bams
 SCRIPTS=$DATDIR/scripts
 ANGSD=/ricco/data/tyler/prog/bin/angsd
 ```
-If you did not yet complete the Introduction to NGS Data excercises you'll need to copy over the quality controlled list of sites,
+If you did not yet complete the Introduction to NGS Data exercises you'll need to copy over the quality controlled list of sites,
 which I've provided a copy of (skip the following step if you completed the bcftools filtering):
 
 ```bash
-# ONLY IF you don't aleady have the directory ~/ngs_intro/output then make it
+# ONLY IF you don't already have the directory ~/ngs_intro/output then make it
 # mkdir ~/ngs_intro/output
 
 cp /ricco/data/tyler/output/qc_sites.pos ~/ngs_intro/output/
@@ -160,7 +160,7 @@ ANGSD always dumps a log file with information on how it was run. Check it out:
 
 	less $DIR/output/calmas_region.arg
 
-Have a look at the GLs. The first two columns refer to the reference sequence (chromososome and position). Then you have 10 likelihoods
+Have a look at the GLs. The first two columns refer to the reference sequence (chromosome and position). Then you have 10 likelihoods
 for all possible genotypes in the order AA, AC, AG, AT, CC, CG, CT, GG, GT, TT. This set of 10 likelihoods is repeated sequentially starting from
 the left of the file for each individual in the row order of individuals in the BAM file. The values are log likelihood ratios 
 scaled to the most likely genotype.
@@ -168,7 +168,7 @@ scaled to the most likely genotype.
 	less -S $DIR/output/calmas_region.glf.gz
 
 We are analyzing 40 individuals so we should have 402 fields in the glf file. You should confirm this and try to print the likelihoods
-for the individual called CMASS6608007 at position chr7:1005 (each bam file is named by the individual, i.e. <idividual ID>.bam). What is 
+for the individual called CMASS6608007 at position chr7:1005 (each bam file is named by the individual, i.e. <individual ID>.bam). What is 
 their most likely genotype? If you need help you can click below.
 
 <details>
@@ -239,7 +239,7 @@ It's also useful to know how ANGSD can identify major and minor alleles, `$ANGSD
 
 We'll use `-doMajorMinor 1` to have ANGSD figure out what the major and minor alleles are from the GLs and then, based on these 
 identified alleles, calculate their frequencies with `-doMaf 1`. If we wanted to account for more uncertainty in the 
-identificaton of what the minor allele is we could use `-doMaf 2`. This latter approach would take a bit longer since there would
+identification of what the minor allele is we could use `-doMaf 2`. This latter approach would take a bit longer since there would
 be three minor alleles to consider instead of just one. We'll also skip any sites that appear to have more than 2 alleles with
 `-skipTriallelic 1` (though we should have filtered these out already with our qc_sites.pos file).
 
@@ -268,7 +268,7 @@ Here's the first 5 sites:
 ## Dxy
 
 Now that you know how to extract allele frequencies, one interesting thing we could do is estimate the absolute divergence 
-between the two ecomorphs of *Astatotilapia calliptera* in your data. Specifcally, we can use the allele frequencies
+between the two ecomorphs of *Astatotilapia calliptera* in your data. Specifically, we can use the allele frequencies
 in the respective ecomorphs to calculate Dxy, which is the average number of pairwise nucleotide differences between them.
 It's important for this calculation that for each site we estimate the frequency for the *same* allele in both ecomorphs.
 In order to do this we can set the major allele to the reference allele with `-doMajorMinor 4` (which may not be true, but that's okay 
@@ -453,7 +453,7 @@ Describe the difference between the two SNP p-value cutoffs.
 
 ## Genotype posterior probabilities and calling
 
-As you looked at the pileups of the low coverage data yesterday, it might have occured to you that if you had some idea of what
+As you looked at the pileups of the low coverage data yesterday, it might have occurred to you that if you had some idea of what
 the allele frequencies were in the population, you would probably have more confidence in what the genotypes might be.
 For example, if the pileup information for an individual was `6  C,,...  5G/BGB`, you'd think that it would help quite a bit in deciding
 how real that 'C' alternate allele is (since it could very well be an error) if you knew that that allele existed in the population,
@@ -466,7 +466,7 @@ gives you *prior* knowledge on the probability of sampling a particular allele. 
 probabilities (genotype likelihoods and the genotype probabilities given an estimate of the allele frequencies). 
 By incorporating prior knowledge of allele frequencies we can increase the accuracy of genotype calling.
 <br>
-So now let's estimate some genotype posterior probilities. To invoke genotype calling you use `-doPost` and `-doGeno`.
+So now let's estimate some genotype posterior probabilities. To invoke genotype calling you use `-doPost` and `-doGeno`.
 
 	-doPost	0	(Calculate posterior prob 3xgprob)
 		1: Using frequency as prior
@@ -505,10 +505,10 @@ $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_s
 -GL 1 -doMajorMinor 1 -doMaf -1 -SNP_pval 1e-6 -skipTriallelic 1 -doPost 1 -doGeno 8 -out $DIR/output/calmas_region_genocall
 ```
 
-The first two columns of the output are the chromosome and position. The following columns list the the posterior probabilites
+The first two columns of the output are the chromosome and position. The following columns list the posterior probabilities
 for the major/major, major/minor, and minor/minor for each individual in the same order as they appeared from the top of the bam list.
 
-Take a look at the ouput.
+Take a look at the output.
 ```bash
 less -S $DIR/output/calmas_region_genocall.geno.gz
 ```
@@ -538,7 +538,7 @@ So this individual is at row 25 in the bam list. Now we can extract their genoty
 ```bash
 zcat $DIR/output/calmas_region_genocall.geno.gz | grep -m 1 $'^chr7\t136054\t' | cut -f 3- | perl -se '$start=($n-1)*3; @arr = split(/\t/,<>); print "@arr[$start .. $start+2]\n"' -- -n=$INDNUM
 ```
-The first genotype configuration has the maximum posterior probability (= 0.994656), so the most probable gentoype is Major/Major.
+The first genotype configuration has the maximum posterior probability (= 0.994656), so the most probable genotype is Major/Major.
 
 The genotypes do indeed sum to 1 (0.994656 + 0.005344 + 0 = 1).
 
@@ -547,7 +547,7 @@ The genotypes do indeed sum to 1 (0.994656 + 0.005344 + 0 = 1).
 What do you think genotype probabilities for an individual of `0.333333   0.333333   0.333333` mean?
 
 We can also perform hard genotype calling using `-doGeno 2` or `-doGeno 4`, which we'll do now. Let's use `-doGeno 2` which represents 
-called genotypes as the number of minor alleles: 0 = Major/Major, 1=Major/Minor, 2=Minor/Minor, -1 = missinge genotype. The genotype 
+called genotypes as the number of minor alleles: 0 = Major/Major, 1=Major/Minor, 2=Minor/Minor, -1 = missing genotype. The genotype 
 with the maximum posterior probability will be called. Perhaps, however, you also want information on the identify of the major and minor
 allele. Printing argument values can be summed to combine outputs. `-doGeno 1` prints the major and minor alleles, so if we add this value
 of 1 to `-doGeno 2`, we have `-doGeno 3`, which should give us the output we want.
@@ -566,7 +566,7 @@ $ANGSD -b $BAMLIST -ref $CICHREF -r chr7:1-600000 -sites ~/ngs_intro/output/qc_s
 The output now has columns (1) chromosome, (2) position, (3) major allele, (4) minor allele, (5..number individuals) genotype calls for every
 individual.
 
-Take a look at the ouput.
+Take a look at the output.
 ```bash
 less -S $DIR/output/calmas_region_genocall_hard.geno.gz
 ```
@@ -704,7 +704,7 @@ middle (50% allele frequency class) to get the folded SFS.
 To calculate the SFS we first estimate the likelihood of every possible allele frequency for every site with `-doSaf 1`, which assumes 
 a HWE relationship between the frequencies of genotypes and alleles. For other `-doSaf` models see `$ANGSD -doSaf` or [here](http://www.popgen.dk/angsd/index.php/SFS_Estimation). 
 We do not know what the ancestral alleles are so will calculate the folded SFS by supplying the reference FASTA to `-anc` in place of an actual
-ancetral state FASTA in conjunction with specifying `-fold 1` at the realSFS stage.
+ancestral state FASTA in conjunction with specifying `-fold 1` at the realSFS stage.
 
 ```bash
 $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
@@ -818,7 +818,7 @@ evince $DIR/output/calmas_region_folded.pdf
 </details>
 
 This SFS looks very strange because our example region is quite short and there is high sampling variance with few SNPs. 
-The folded SFS for all of chromsome 7 (below) has been generated for you in the same way, except no quality controls were applied, but 
+The folded SFS for all of chromosome 7 (below) has been generated for you in the same way, except no quality controls were applied, but 
 still it looks much more sane. Try to compare this observed SFS to the expected SFS from a neutrally evolving, constant-size
 population. In the expected case the number of sites belonging to each frequency category is proportional to 1/x, where x is the allele frequency. 
 Try to think of how you can compare the observed to the expected SFS, and then you can click below for help.
@@ -906,7 +906,7 @@ probability distribution over all possible allele frequencies at a particular si
 $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai -doSaf 1 -pest $DIR/output/calmas_region_folded.sfs -anc $CICHREF -out $DIR/output/calmas_region_folded_post
 ```
 Now take a look at the output. It's same format as the .saf output from before except now instead of likelihoods the values are posterior
-probabilites of allele frequencies in log scale.
+probabilities of allele frequencies in log scale.
 
 ```bash
 $DATDIR/prog/bin/realSFS print $DIR/output/calmas_region_folded_post.saf.idx | less -S
