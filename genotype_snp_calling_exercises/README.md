@@ -675,7 +675,7 @@ individuals from the Masoko sex determination study with morph information).
 
 <summary> click for PCA plots </summary>
 
-40 individuals chr7:1-60000 all SNPs
+40 individuals, chr7:1-60000, all SNPs
 <br>
 ![calmas_region_PCA_allsnps](./outputs/calmas_pca.png)
 <br><br>
