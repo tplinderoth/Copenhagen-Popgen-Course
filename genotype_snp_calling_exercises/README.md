@@ -905,7 +905,7 @@ probability distribution over all possible allele frequencies at a particular si
 ```bash
 $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai -doSaf 1 -pest $DIR/output/calmas_region_folded.sfs -anc $CICHREF -out $DIR/output/calmas_region_folded_post
 ```
-Now take a look at the output. It's same format as the *.saf output from before except now instead of likelihoods the values are posterior
+Now take a look at the output. It's same format as the .saf output from before except now instead of likelihoods the values are posterior
 probabilites of allele frequencies in log scale.
 
 ```bash
