@@ -712,7 +712,7 @@ $ANGSD -glf10_text $DIR/output/calmas_region.glf.gz -nInd 40 -fai $CICHREF.fai \
 ```
 This produces three files: a binary .saf file which contains the log-scaled allele frequency likelihoods at all sites, its associated .saf.idx index file,
 and a binary .pos file that contains the positions of sites in the .saf file. You can have a look at the allele frequency likelihoods using 
-`realSFS`. The first two columns are chromosome and position, followed by 2N+1 columns with the log likelihoods for allele frequencies 0, 1/2N, ... ,2N+1.
+`realSFS`. The first two columns are chromosome and position, followed by 2N+1 columns with the log likelihoods for allele frequencies 0, 1/2N, ..., 2N+1.
 
 ```bash
 $DATDIR/prog/bin/realSFS print $DIR/output/calmas_region_folded.saf.idx | less -S
@@ -720,6 +720,7 @@ $DATDIR/prog/bin/realSFS print $DIR/output/calmas_region_folded.saf.idx | less -
 <details>
 
 <summary> click for extended information on realSFS functionality </summary>
+
 ```bash	
 $DATDIR/prog/bin/realSFS
 ```
