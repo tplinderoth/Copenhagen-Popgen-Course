@@ -607,7 +607,7 @@ which is a set of programs for analyzing NGS genetic data and is particularly su
 perform a Principle Component Analysis (PCA) of genome-wide genetic variation. We are not hard-calling genotypes and so can better avoid snow-balling error 
 from incorrectly called genotypes. There are [other](http://www.popgen.dk/angsd/index.php/PCA) ways of performing PCA with ANGSD, so this is just a 
 demonstration of one approach.
-<br>
+<br><br>
 First, we calculate genotype posteriors in binary format.
 
 ```bash
